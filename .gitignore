@@ -1,0 +1,33 @@
+# Local editor and OS files
+*~
+*.swp
+*.swo
+*.tmp
+*.bak
+*.orig
+*.rej
+.DS_Store
+Thumbs.db
+
+# Local workspace/tooling state
+/.codex/
+
+# Active-tree DOS/TASM/Watcom intermediate build byproducts.
+/src/**/*.obj
+/src/**/*.o
+/src/**/*.lst
+/src/**/*.err
+/src/**/*.crf
+/src/**/*.xrf
+/src/**/*.sym
+
+# Common local output directories if historical build scripts are run manually.
+/binw/
+/h32/
+/l32/
+/build/
+/dist/
+/out/
+
+# Do not add global executable, library, map, linker, DOS/32A image, or archive
+# ignores here; historical release artifacts should remain visible.
