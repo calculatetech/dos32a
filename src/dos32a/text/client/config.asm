@@ -346,17 +346,16 @@ cfg_env_dosbuf:
 ;
 cfg_env_test:
 	call	get_env_swc
-;	jc	@@0
-;	push	ds
-;	mov	ds,_seg_kernel
-;	assume	ds:_KERNEL
-;	jz	@@1
-;	or	bptr ds:pm32_data[0],00000001b
-;	pop	ds
-;	ret
-;@@1:	and	bptr ds:pm32_data[0],11111110b
-;	assume	ds:_TEXT16
-;	pop	ds
+	jc	@@0
+	push	ds
+	mov	ds,_seg_kernel
+	assume	ds:_KERNEL
+	jz	@@1
+	or	bptr ds:pm32_data[0],00000001b
+	jmp	@@2
+@@1:	and	bptr ds:pm32_data[0],11111110b
+@@2:	assume	ds:_TEXT16
+	pop	ds
 @@0:	ret
 
 

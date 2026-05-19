@@ -109,8 +109,8 @@ void ShowKernelMenu()
 	Print_At(2,11," DPMI Kernel Configuration ");
 	SetColor(LIGHTWHITE);
 
-	SetColor(WHITE);
 	Print_At( 3,10,"1)  VCPI/DPMI Detection Order ....................");
+	SetColor(WHITE);
 	Print_At( 4,10,"2)  XMS/VCPI Detection Order .....................");
 	SetColor(LIGHTWHITE);
 	Print_At( 5,10,"3)  VCPI SmartPage Allocation Mode .....................");
@@ -168,12 +168,11 @@ void ShowKernelConfig()
 	SetColor(LIGHTWHITE);
 	SetBackColor(BLUE);
 
-//	if(id32.kernel_misc&0x01) Print_At(3,59," VCPI/DPMI");else Print_At(3,59," DPMI/VCPI");
+	if(id32.kernel_misc&0x01) Print_At(3,59," VCPI/DPMI");else Print_At(3,59," DPMI/VCPI");
 
 //	if(id32.kernel_misc&0x02) Print_At(4,60," XMS/VCPI");else Print_At(4,60," VCPI/XMS");
 
 	SetColor(WHITE);
-	Print_At(3,60," reserved");
 	Print_At(4,60," reserved");
 	SetColor(LIGHTWHITE);
 

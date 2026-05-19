@@ -1800,7 +1800,8 @@ int31h_0800:
 
 @@loop:	stos	dptr es:[edi]			; map one 4KB page
 	add	eax,4096			; go for next page
-	loop	@@loop				; loop until no pages left
+	dec	ecx
+	jnz	@@loop				; loop until no pages left
 	or	bptr [edx+1],2			; mark start of mapped block
 	or	bptr [edi-3],4			; mark end of mapped block
 

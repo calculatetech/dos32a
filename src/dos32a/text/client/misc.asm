@@ -468,14 +468,14 @@ setup_selectors:
 ;=============================================================================
 check_command_line:
 	mov	di,80h
-	movzx	cx,es:[di]		; get length of command line
-	jcxz	@@err			; if zero, error
+	movzx	ecx,bptr es:[di]	; get length of command line
+	jecxz	@@err			; if zero, error
 	inc	di			; offset to start of command line
 	mov	al,20h
 	repe	scasb			; look for non-space character
 	jz	@@err			; if not found, error
 	dec	di
-	inc	cx
+	inc	ecx
 	mov	bx,di
 @@1:	mov	al,es:[di]
 	cmp	al,09h			; look for TAB character
@@ -485,7 +485,8 @@ check_command_line:
 	cmp	al,20h			; look for ' ' character
 	jz	@@2
 	inc	di
-	loop	@@1
+	dec	ecx
+	jnz	@@1
 @@2:	mov	cx,di
 	mov	si,bx			; SI = pointer to file name
 	mov	di,bx			; DI = pointer to file name
@@ -813,7 +814,7 @@ search_for_le:
 	test	ax,ax			; check if no bytes read
 	mov	ax,3003h
 	jz	file_error		; if true, no app in file
-	shr	cx,1
+	shr	ecx,1
 @@2:	mov	ax,gs:[edx+0]
 	mov	bx,gs:[edx+2]
 	test	bx,bx
@@ -828,7 +829,8 @@ search_for_le:
 	jz	@@3
 @@4:	add	edx,2
 	add	ebp,2			; increment pointer in file
-	loop	@@2
+	dec	ecx
+	jnz	@@2
 	jmp	@@1
 @@3:	ret
 

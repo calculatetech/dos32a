@@ -242,7 +242,7 @@ enable_A20:				; hardware enable gate A20
 	mov	al,0DFh
 	out	60h,al
 	call	enablea20kbwait
-@@f0:	mov	cx,0800h		; wait for A20 to enable do 800h tries
+@@f0:	mov	ecx,0800h		; wait for A20 to enable do 800h tries
 @@l0:	call	enablea20test		; is A20 enabled?
 	jz	@@done			; if yes, done
 	in	al,40h			; get current tick counter
@@ -258,7 +258,8 @@ enable_A20:				; hardware enable gate A20
 	in	al,40h
 	cmp	al,ah
 	je	@@l1
-	loop	@@l0			; loop for another try
+	dec	ecx
+	jnz	@@l0			; loop for another try
 	popf
 	stc				; error: set carry flag
 	ret

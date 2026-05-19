@@ -242,16 +242,16 @@ of your DOS/32 Advanced programs from the command line.",
 
 
 	char*	kernelhlp[]={
-/*
+
 "Controls  the  order of <VCPI/DPMI detection>.  When set to VCPI/DPMI, the\n\
 DOS  Extender  will  try to detect,  and  if succeeded initialize a VCPI\n\
 server even though a DPMI host may be present in the system.",
 
+/*
 "Controls  the  order  of <XMS/VCPI detection>.  When  set to XMS/VCPI, the\n\
 DOS Extender will whenever possible favour  Clean and XMS systems before\n\
 the slower VCPI/DPMI ones.",
 */
-"<Deprecated>.",
 "<Deprecated>.",
 
 /*

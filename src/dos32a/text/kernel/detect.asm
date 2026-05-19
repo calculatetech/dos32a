@@ -86,7 +86,7 @@ pm32_info:
 	mov	ax,4300h		; check for XMS
 	int	2Fh
 	cmp	al,80h
-	jnz	@@1			; jump if XMS not found
+	jnz	@@no_xms		; jump if XMS not found
 
 	push	es
 	mov	ax,4310h
@@ -106,6 +106,8 @@ pm32_info:
 @@xms1:	mov	xms_data,eax
 	pop	es
 
+	call	@@detect_HDPMI		; check for HDPMI32 before IOPL skip
+
 	pushf
 	pop	ax			; AX = flags
 	and	ah,0CFh			; reset IOPL to 0
@@ -116,9 +118,20 @@ pm32_info:
 	test	ah,30h			; is IOPL still 0?
 	jz	@@4			; if yes, omit VCPI/DPMI tests
 
-@@1:	call	@@detect_VCPI		; check for VCPI first
+	jmp	@@1
+@@no_xms:
+	call	@@detect_HDPMI		; check for HDPMI32 before VCPI/DPMI
+
+@@1:	test	pm32_mode,00000001b	; check VCPI/DPMI detection order
+	jnz	@@vcpi_first
+	call	@@detect_DPMI		; check for DPMI first
+	call	@@detect_VCPI		; check for VCPI second
+	jmp	@@pmode_test
+@@vcpi_first:
+	call	@@detect_VCPI		; check for VCPI first
 	call	@@detect_DPMI		; check for DPMI second
 
+@@pmode_test:
 	smsw	ax			; AX = machine status word
 	and	al,1			; is system in protected mode?
 	mov	ax,2			; error code in case in protected mode
@@ -161,6 +174,35 @@ pm32_info:
 	jmp	@@exit
 
 
+
+
+;=============================================================================
+@@detect_HDPMI:				; detect an HDPMI32 DPMI host
+	pop	bp
+
+	mov	ax,1687h		; check for DPMI
+	int	2Fh
+	test	ax,ax			; DPMI present?
+	jnz	@@hdpmi0		; if no, exit routine
+	test	bl,1			; is DPMI 32bit?
+	jz	@@hdpmi0		; if no, exit routine
+	cmp	bptr es:[0],'H'		; verify HDPMI signature
+	jnz	@@hdpmi0
+	cmp	bptr es:[1],'D'
+	jnz	@@hdpmi0
+	cmp	bptr es:[2],'P'
+	jnz	@@hdpmi0
+	cmp	bptr es:[3],'M'
+	jnz	@@hdpmi0
+	cmp	bptr es:[4],'I'
+	jnz	@@hdpmi0
+
+	mov	wptr dpmiepmode[0],di	; store DPMI initial mode switch addx
+	mov	wptr dpmiepmode[2],es
+	mov	bx,si			; BX = number of paragraphs needed
+	mov	ch,3			; pmode type is 3 (DPMI)
+	jmp	@@done			; go to done ok
+@@hdpmi0:	jmp	bp			; return to calling routine
 
 
 ;=============================================================================
@@ -412,9 +454,10 @@ fpu_detect:				; detect 8087, 287, 387, 487 etc
 @@done:	pop	eax
 	and	eax,7
 	jz	@@exit
-	mov	cx,8
+	mov	ecx,8
 @@loop:	fldz				; set ST(0) to ST(7) to +ZERO
-	loop	@@loop
+	dec	ecx
+	jnz	@@loop
 	finit				; reinitialize FPU
 @@exit:	mov	fputype,al
 	ret

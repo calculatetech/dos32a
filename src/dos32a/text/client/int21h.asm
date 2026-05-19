@@ -808,11 +808,12 @@ _ctrl_c:mov	ax,4CFFh	; exit on CTRL-C with code 255
 	int	31h
 
 @@2:	mov	ecx,_app_num_objects		; deallocate selectors
-	jcxz	@@4
+	jecxz	@@4
 @@3:	mov	ax,0001h
 	mov	bx,_app_buf_allocsel[ecx*2]
 	int	31h
-	loop	@@3
+	dec	ecx
+	jnz	@@3
 
 @@4:	call	check_inttab
 	call	restore_inttab
