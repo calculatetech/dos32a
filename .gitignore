@@ -12,6 +12,14 @@ Thumbs.db
 # Local workspace/tooling state
 /.codex/
 
+# Local historical/proprietary tool installer/media used for builds.
+/tasm5/
+/dos32a_710/
+
+# DOSBox-X smoke-test scratch files.
+/dosbox-smoke.log
+/sver.out
+
 # Active-tree DOS/TASM/Watcom intermediate build byproducts.
 /src/**/*.obj
 /src/**/*.o
