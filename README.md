@@ -95,6 +95,10 @@ requires the v7.1 SDK, and the historical 8.00 source documentation records
 Borland Turbo Assembler 5.x and Watcom C/C++ as the toolchain family used for
 that line.
 
+The checked-in `tasm5\` directory contains third-party historical assembler
+tool media and patch files used only to reproduce this build environment. Those
+files are not part of DOS/32A and are not covered by the DOS/32A license.
+
 Do not assume a modern host compiler can reproduce the historical binaries.
 Any build notes should identify the exact SDK, TASM and Watcom versions, host
 environment, DOS or DPMI runtime, and source tree used.

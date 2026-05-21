@@ -13,7 +13,6 @@ Thumbs.db
 /.codex/
 
 # Local historical/proprietary tool installer/media used for builds.
-/tasm5/
 /dos32a_710/
 
 # DOSBox-X smoke-test scratch files.
