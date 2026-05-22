@@ -26,30 +26,56 @@ if (-not $driveZ) {
 }
 if (-not (Test-Path -LiteralPath $driveZ)) { throw "DOSBox-X drive Z folder was not found at $driveZ." }
 
-$stage = Join-Path $driveZ 'D32SMK'
-$log = Join-Path $stage 'SMOKE.LOG'
+$stageTag = ('{0:X4}' -f (Get-Random -Maximum 0x10000))
+$standName = "D32S$stageTag"
+$appName = "D32A$stageTag"
+$batchName = "D32B$stageTag.BAT"
+$standStage = Join-Path $driveZ $standName
+$appStage = Join-Path $driveZ $appName
+$appBin = Join-Path $appStage 'BINW'
+$log = Join-Path $driveZ "$standName.LOG"
+$batch = Join-Path $driveZ $batchName
 $dos32a = Join-Path $repo 'binw\dos32a.exe'
 $sver = Join-Path $repo 'binw\sver.exe'
+$hello = Join-Path $repo 'dos32a_800\examples\asm_1\hello.exe'
 
 if (-not (Test-Path -LiteralPath $dos32a)) { throw "Missing build output: $dos32a." }
 if (-not (Test-Path -LiteralPath $sver)) { throw "Missing build output: $sver." }
+if (-not (Test-Path -LiteralPath $hello)) { throw "Missing DOS/32A sample: $hello." }
 
-New-Item -ItemType Directory -Path $stage -Force | Out-Null
-Remove-Item -LiteralPath $log -ErrorAction SilentlyContinue
-Copy-Item -LiteralPath $dos32a -Destination (Join-Path $stage 'DOS32A.EXE') -Force
-Copy-Item -LiteralPath $sver -Destination (Join-Path $stage 'SVER.EXE') -Force
+foreach ($path in @($standStage, $appStage, $log, $batch)) {
+    Remove-Item -LiteralPath $path -Recurse -Force -ErrorAction SilentlyContinue
+}
+New-Item -ItemType Directory -Path $standStage, $appBin -Force | Out-Null
+Copy-Item -LiteralPath $dos32a -Destination (Join-Path $standStage 'DOS32A.EXE') -Force
+Copy-Item -LiteralPath $sver -Destination (Join-Path $standStage 'SVER.EXE') -Force
+Copy-Item -LiteralPath $dos32a -Destination (Join-Path $appBin 'DOS32A.EXE') -Force
+Copy-Item -LiteralPath $hello -Destination (Join-Path $appStage 'AHELLO.EXE') -Force
+
+$batchLines = @(
+    '@echo off',
+    'z:',
+    "cd $standName",
+    'SVER.EXE DOS32A.EXE',
+    'echo SVER_SMOKE_OK',
+    'DOS32A.EXE',
+    'echo DOS32A_SMOKE_OK',
+    'cd ..',
+    "cd $appName",
+    "set DOS32A=Z:\$appName",
+    'AHELLO.EXE',
+    'echo APP_SMOKE_OK',
+    'exit'
+)
+Set-Content -LiteralPath $batch -Value $batchLines -Encoding ASCII
 
 $arguments = @(
     '-set "sdl waitonerror=false"',
     ('-set "log logfile={0}"' -f $log),
+    '-set "dos nocachedir=true"',
     '-set "dos log console=true"',
     '-c "z:"',
-    '-c "cd D32SMK"',
-    '-c "SVER.EXE DOS32A.EXE"',
-    '-c "echo SVER_SMOKE_OK"',
-    '-c "DOS32A.EXE"',
-    '-c "echo DOS32A_SMOKE_OK"',
-    '-c "exit"'
+    ('-c "{0}"' -f $batchName)
 ) -join ' '
 
 $process = Start-Process -FilePath $dosbox -ArgumentList $arguments -WindowStyle Hidden -PassThru
@@ -99,14 +125,24 @@ if (-not $logText.Contains('DOS32A_SMOKE_OK')) {
     Show-SmokeLogTail -Path $log
     exit 1
 }
+if (-not $logText.Contains('Hello world from protected mode!!!')) {
+    Write-Host 'DOS/32A did not transfer control to the protected-mode sample.'
+    Show-SmokeLogTail -Path $log
+    exit 1
+}
+if (-not $logText.Contains('APP_SMOKE_OK')) {
+    Write-Host 'Protected-mode sample did not return to the DOSBox-X shell.'
+    Show-SmokeLogTail -Path $log
+    exit 1
+}
 if (-not $logText.Contains('Version:        9.1.2')) {
     Write-Host 'SVER did not report DOS/32A version 9.1.2.'
     Show-SmokeLogTail -Path $log
     exit 1
 }
 
-Select-String -Path $log -Pattern 'SVER -- Version|Version:        9\.1\.2|SVER_SMOKE_OK|DOS32A_SMOKE_OK' |
+Select-String -Path $log -Pattern 'SVER -- Version|Version:        9\.1\.2|SVER_SMOKE_OK|DOS32A_SMOKE_OK|Hello world from protected mode!!!|APP_SMOKE_OK' |
     ForEach-Object { $_.Line -replace '^\s*DOS CON:\s*', '' }
 
-Write-Host "DOSBox-X smoke passed using staged files in $stage."
+Write-Host "DOSBox-X smoke passed using staged files in $standStage and $appStage."
 exit 0
