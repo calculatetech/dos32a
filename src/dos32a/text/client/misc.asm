@@ -55,6 +55,153 @@ exit86:	cli
 	mov	ax,4CFFh		; exit with error code -1
 	int	21h			; NOTE: DOS 1.0 will hang
 
+;=============================================================================
+; Report the standalone syntax error before protected mode is initialized.
+;
+check_standalone_exec:
+	push	ax bx cx dx si di bp ds es
+	mov	ax,cs:_seg_env
+	test	ax,ax
+	jz	@@check_cmd
+	mov	es,ax
+	xor	ax,ax
+	xor	di,di
+	mov	cx,0FFFFh
+@@env:	repne	scasb
+	jcxz	@@check_cmd
+	scasb
+	jcxz	@@check_cmd
+	jnz	@@env
+	inc	di
+	inc	di
+	push	ds
+	push	es
+	pop	ds
+	mov	dx,di
+	mov	ax,3DC0h
+	int	21h
+	pop	ds
+	jc	@@check_cmd
+	mov	bx,ax
+	mov	dx,offs _mz_header
+	mov	cx,64
+	mov	ah,3Fh
+	int	21h
+	pushf
+	mov	ah,3Eh
+	int	21h
+	popf
+	jc	@@check_cmd
+	cmp	ax,64
+	jb	@@check_cmd
+	cmp	wptr cs:_mz_header,'ZM'
+	jnz	@@check_cmd
+	cmp	wptr cs:_mz_header+18h,0040h
+	jnz	@@check_cmd
+	cmp	wptr cs:_mz_header+3Ch,0
+	jz	@@check_cmd
+	jmp	@@done
+
+@@check_cmd:
+	mov	es,cs:_seg_es
+	mov	cl,es:[80h]
+	xor	ch,ch
+	jcxz	@@cmd_empty
+	mov	di,81h
+@@skip:	mov	al,es:[di]
+	cmp	al,20h
+	jz	@@skip_next
+	cmp	al,09h
+	jnz	@@token
+@@skip_next:
+	inc	di
+	loop	@@skip
+	jmp	@@syntax
+@@cmd_empty:
+	jmp	@@syntax
+
+@@token:
+	mov	bx,di
+@@find_end:
+	jcxz	@@token_end
+	mov	al,es:[di]
+	cmp	al,20h
+	jz	@@token_end
+	cmp	al,09h
+	jz	@@token_end
+	inc	di
+	dec	cx
+	jmp	@@find_end
+
+@@token_end:
+	mov	dx,cx
+	mov	si,di
+@@base:	cmp	si,bx
+	jz	@@base_done
+	dec	si
+	mov	al,es:[si]
+	cmp	al,'\'
+	jz	@@base_next
+	cmp	al,'/'
+	jz	@@base_next
+	cmp	al,':'
+	jnz	@@base
+@@base_next:
+	inc	si
+@@base_done:
+	mov	ax,di
+	sub	ax,si
+	cmp	ax,6
+	jz	@@cmp_short
+	cmp	ax,10
+	jnz	@@done
+	mov	bx,offs _self_name_ext
+	mov	cx,10
+	jmp	@@cmp
+@@cmp_short:
+	mov	bx,offs _self_name
+	mov	cx,6
+@@cmp:	mov	al,es:[si]
+	cmp	al,'a'
+	jb	@@cmp_chr
+	cmp	al,'z'
+	ja	@@cmp_chr
+	sub	al,20h
+@@cmp_chr:
+	cmp	al,[bx]
+	jnz	@@done
+	inc	si
+	inc	bx
+	loop	@@cmp
+	mov	cx,dx
+@@skip_self:
+	jcxz	@@syntax
+	mov	al,es:[di]
+	cmp	al,20h
+	jz	@@skip_self_next
+	cmp	al,09h
+	jnz	@@done
+@@skip_self_next:
+	inc	di
+	loop	@@skip_self
+@@syntax:
+	pop	es ds bp di si dx cx bx ax
+	push	cs
+	pop	ds
+	mov	si,offs _standalone_syntax
+@@syntax_print:
+	lodsb
+	test	al,al
+	jz	@@syntax_exit
+	xor	bx,bx
+	mov	ah,0Eh
+	int	10h
+	jmp	@@syntax_print
+@@syntax_exit:
+	jmp	exit86
+@@done:	pop	es ds bp di si dx cx bx ax
+	ret
+
 .386p
 ;=============================================================================
 ; Protected mode exit routine, using 80386 instructions

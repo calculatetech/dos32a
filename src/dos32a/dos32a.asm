@@ -164,6 +164,7 @@ start:	push	cs			; DS = CS
 	call	get_default_config	; configure using defaults
 	call	get_environ_config	; configure using environment
 	call	copyright		; show copyright message
+	call	check_standalone_exec	; exit unbound/no-arg run in real mode
 	mov	ax,ss			; get end of program
 	mov	si,es:[0002h]		; get free DOS memory (in para)
 	add	ax,STACKSIZE+INTTABSIZE	; stacksize+inttable (in para)
