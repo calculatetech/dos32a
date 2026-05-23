@@ -106,8 +106,6 @@ pm32_info:
 @@xms1:	mov	xms_data,eax
 	pop	es
 
-	call	@@detect_HDPMI		; check for HDPMI32 before IOPL skip
-
 	pushf
 	pop	ax			; AX = flags
 	and	ah,0CFh			; reset IOPL to 0
@@ -120,7 +118,6 @@ pm32_info:
 
 	jmp	@@1
 @@no_xms:
-	call	@@detect_HDPMI		; check for HDPMI32 before VCPI/DPMI
 
 @@1:	test	pm32_mode,00000001b	; check VCPI/DPMI detection order
 	jnz	@@vcpi_first
@@ -174,35 +171,6 @@ pm32_info:
 	jmp	@@exit
 
 
-
-
-;=============================================================================
-@@detect_HDPMI:				; detect an HDPMI32 DPMI host
-	pop	bp
-
-	mov	ax,1687h		; check for DPMI
-	int	2Fh
-	test	ax,ax			; DPMI present?
-	jnz	@@hdpmi0		; if no, exit routine
-	test	bl,1			; is DPMI 32bit?
-	jz	@@hdpmi0		; if no, exit routine
-	cmp	bptr es:[0],'H'		; verify HDPMI signature
-	jnz	@@hdpmi0
-	cmp	bptr es:[1],'D'
-	jnz	@@hdpmi0
-	cmp	bptr es:[2],'P'
-	jnz	@@hdpmi0
-	cmp	bptr es:[3],'M'
-	jnz	@@hdpmi0
-	cmp	bptr es:[4],'I'
-	jnz	@@hdpmi0
-
-	mov	wptr dpmiepmode[0],di	; store DPMI initial mode switch addx
-	mov	wptr dpmiepmode[2],es
-	mov	bx,si			; BX = number of paragraphs needed
-	mov	ch,3			; pmode type is 3 (DPMI)
-	jmp	@@done			; go to done ok
-@@hdpmi0:	jmp	bp			; return to calling routine
 
 
 ;=============================================================================

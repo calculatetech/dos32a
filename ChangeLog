@@ -7,6 +7,13 @@
 DOS/32 Advanced DOS Extender, version 26.1
 ==========================================
 
+DOS Extender (DOS32A.EXE):
+--------------------------
++ Fixed an id Tech compatibility regression when HDPMI32 is loaded. DOS/32A no
+  longer forces the HDPMI32-specific external DPMI path before the normal
+  IOPL/VCPI/DPMI detection logic, avoiding Doom-family freezes while preserving
+  the normal DPMI detection path.
+
 SUNSYS Bind Utility (SB.EXE):
 -----------------------------
 + Fixed rebinding executables with chained MZ/BW/MZ/LE sections, including

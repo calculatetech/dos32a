@@ -22,6 +22,11 @@ The immediate goal is to diagnose efficiently despite the failure not reproducin
 - [x] (2026-05-23 17:15-04:00) Read the updated real-hardware results from `dist\idtech-hdpmi-doom2-probes\RESULTS.CSV`.
 - [x] (2026-05-23 17:23-04:00) Built a focused 26.1 detect-path package at `dist\idtech-hdpmi-detect-probes.zip`.
 - [x] (2026-05-23 17:24-04:00) Verified the package contains five bound Doom II probes and removed temporary `C:\DOSBox-X\drivec\D32DP`; no DOSBox-X processes remained.
+- [x] (2026-05-23 17:36-04:00) Read the focused real-hardware results from `dist\idtech-hdpmi-detect-probes\RESULTS.CSV`.
+- [x] (2026-05-23 17:39-04:00) Removed the HDPMI32-specific early-detection shortcut from `src\dos32a\text\kernel\detect.asm`, matching the passing `260NOHDP` probe.
+- [x] (2026-05-23 17:42-04:00) Built `binw\dos32a.exe` successfully from the fixed source.
+- [x] (2026-05-23 17:44-04:00) Bound `dist\idtech-hdpmi-fixed-doom2.zip` from the fixed build for real-hardware confirmation.
+- [x] (2026-05-23 17:45-04:00) Ran DOSBox-X smoke with a 10-second timeout; SVER reported 26.1 and both loader paths returned successfully.
 
 ## Surprises & Discoveries
 
@@ -39,6 +44,9 @@ The immediate goal is to diagnose efficiently despite the failure not reproducin
 
 - Observation: The historical 8.00 reset is isolated to a different nearby subsystem than the current 26.1 freeze.
   Evidence: User-updated results show every 8.00 reversion probe still resetting except `800I31`, which passes when 8.00 uses the 7.35 `text\kernel\int31h.asm`.
+
+- Observation: The focused 26.1 probes show that forcing HDPMI32 as the external DPMI host is the failing path for Doom II, not the IOPL shortcut by itself.
+  Evidence: User-updated results show `260NOHDP` as `pass`, `260NOIOP` as `pass`, and `260DPMI1` as `freeze` at `calling DMX_Init`; `260BASE` still freezes at `S_Init: Setting up sound.`
 
 ## Decision Log
 
@@ -62,11 +70,15 @@ The immediate goal is to diagnose efficiently despite the failure not reproducin
   Rationale: Reverting all of `detect.asm` proves the current failure is in the detection path, but the 26.0 write-combining fix depends on detecting HDPMI32 even when the IOPL shortcut would otherwise skip DPMI probing. The next package must distinguish the HDPMI signature shortcut from normal DPMI detection ordered before the IOPL shortcut.
   Date/Author: 2026-05-23 / Codex
 
+- Decision: Remove the HDPMI32-specific early-detection shortcut and keep the existing normal VCPI/DPMI detection order.
+  Rationale: The passing `260NOHDP` probe removes only the two `@@detect_HDPMI` calls, while the failing `260DPMI1` probe proves that replacing those calls with normal early DPMI detection still freezes Doom II. The least invasive fix is to stop forcing HDPMI32 before the IOPL shortcut.
+  Date/Author: 2026-05-23 / Codex
+
 ## Outcomes & Retrospective
 
 Produced a real-hardware probe package at `dist\idtech-hdpmi-doom2-probes.zip`. It contains 13 Doom II executables, each in a directory named for the probe, plus a test plan and result sheet. The package is designed so the first seven tests should usually identify the relevant subsystem; the remaining tests provide file-level fallback if the high-value probes do not flip the result.
 
-No source fix has been made yet. The first probe package showed that current 26.1's Doom II failure is in `src\dos32a\text\kernel\detect.asm`, and that 8.00's reset is fixed by reverting `text\kernel\int31h.asm`. The focused detect-path package is now available at `dist\idtech-hdpmi-detect-probes.zip`; it determines whether the fix can be a narrow replacement of the HDPMI-specific detection shortcut with normal DPMI detection before the IOPL shortcut.
+The first probe package showed that current 26.1's Doom II failure is in `src\dos32a\text\kernel\detect.asm`, and that 8.00's reset is fixed by reverting `text\kernel\int31h.asm`. The focused detect-path package showed that Doom II passes when the HDPMI-specific shortcut is removed, but still freezes when normal DPMI detection is forced before the IOPL shortcut. The source now removes the `@@detect_HDPMI` shortcut and keeps normal DPMI detection behind the existing detection order and IOPL logic.
 
 ## Context and Orientation
 
@@ -149,6 +161,9 @@ Observed local validation:
     Focused package extenders built: 260BASE, 260D735, 260NOHDP, 260DPMI1, 260NOIOP.
     Focused package Doom II probes bound from DOOM2.BAK in two DOSBox-X batches, each under 10 seconds.
     Focused package zip size: 1413883 bytes.
+    Fixed source build: `build.cmd dos32a` completed with no assembler or linker errors.
+    Fixed Doom II package: `dist\idtech-hdpmi-fixed-doom2.zip`, 302069 bytes.
+    DOSBox-X smoke: passed with `-TimeoutSeconds 10`; SVER reported Version 26.1.
 
 ## Idempotence and Recovery
 
@@ -170,6 +185,12 @@ Generated artifacts:
     dist\idtech-hdpmi-detect-probes\MANIFEST.TXT
     dist\idtech-hdpmi-detect-probes\RESULTS.CSV
     dist\idtech-hdpmi-detect-probes\APPLYONE.BAT
+    dist\idtech-hdpmi-fixed-doom2.zip
+    dist\idtech-hdpmi-fixed-doom2\DOOM2.EXE
+    dist\idtech-hdpmi-fixed-doom2\DOS32A.EXE
+    dist\idtech-hdpmi-fixed-doom2\MANIFEST.TXT
+    dist\idtech-hdpmi-fixed-doom2\SVER.LOG
+    dist\idtech-hdpmi-fixed-doom2\APPLYFIX.BAT
 
 The package directories `735GOOD`, `800BAD`, `260BASE`, `260NOKRM`, `260D735`, `800CLI`, `800DASM`, `800INIT`, `800I21`, `800MISC`, `800DET`, `800LOAD`, and `800I31` each contain a `DOOM2.EXE` probe.
 
@@ -186,3 +207,5 @@ Revision note, 2026-05-23 / Codex: Updated after producing and validating the Do
 Revision note, 2026-05-23 / Codex: Updated after reading the user's real-hardware results. `260D735` isolates the current 26.1 failure to `detect.asm`; `800I31` isolates the historical 8.00 reset to the INT 31h handler.
 
 Revision note, 2026-05-23 / Codex: Updated after producing the focused 26.1 detect-path probe package and cleaning the DOSBox-X scratch drive.
+
+Revision note, 2026-05-23 / Codex: Updated after applying the source fix, building DOS32A.EXE, packaging a fixed Doom II confirmation binary, and running the DOSBox-X smoke test.
