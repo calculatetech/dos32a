@@ -985,8 +985,24 @@ int31h_0302:
 ; Simulate Real Mode Interrupt
 ;
 int31h_0300:
+	cmp	bl,2Fh				; MSCDEX device-driver requests can
+	jnz	@@reflect			; corrupt the caller's PM stack when
+	cmp	wptr es:[edi+1Ch],1510h		; reflected through the RM handler.
+	jz	@@msc_fail			; Report request failure instead.
+@@reflect:
 	movzx	ebx,bl				; get real mode INT CS:IP
 	mov	ebp,dptr ds:[ebx*4]		; read from real mode interrupt table
+	jmp	int3103
+
+@@msc_fail:
+	push	eax ebx
+	movzx	ebx,wptr es:[edi+10h]		; request packet offset
+	movzx	eax,wptr es:[edi+22h]		; request packet segment
+	shl	eax,4
+	add	ebx,eax
+	mov	wptr ds:[ebx+3],8000h		; mark request as failed
+	pop	ebx eax
+	jmp	int31ok
 
 int3103:					; common to 0300h, 0301h, and 0302h
 	mov	gs,cs:seldata

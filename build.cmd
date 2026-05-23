@@ -60,7 +60,7 @@ echo Creating DOS/32 Advanced DOS Extender
 pushd "%DOS32A%\src\dos32a" || exit /b 1
 tasm32 -dEXEC_TYPE=0 %TASMFLAGS% -c kernel.asm || goto fail_popd
 tasm32 -dEXEC_TYPE=0 %TASMFLAGS% -c dos32a.asm || goto fail_popd
-wcl %WCLFLAGS% -lr -fm=dos32a -fe=dos32a dos32a.obj kernel.obj || goto fail_popd
+wcl %WCLFLAGS% -lr -fm=dos32a -fe=dos32a -"disable 2083" -"option packcode=1,packdata=1" dos32a.obj kernel.obj || goto fail_popd
 if not exist "%OUT%" mkdir "%OUT%" || goto fail_popd
 copy /y dos32a.exe "%OUT%\dos32a.exe" >nul || goto fail_popd
 call :clean_current
