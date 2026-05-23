@@ -162,6 +162,7 @@ start:	push	cs			; DS = CS
 	cld
 
 	call	get_default_config	; configure using defaults
+	call	apply_dos4gw_name_config; DOS4GW.EXE replacement defaults
 	call	get_environ_config	; configure using environment
 	call	copyright		; show copyright message
 	call	check_standalone_exec	; exit unbound/no-arg run in real mode

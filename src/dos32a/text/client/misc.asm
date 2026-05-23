@@ -56,6 +56,102 @@ exit86:	cli
 	int	21h			; NOTE: DOS 1.0 will hang
 
 ;=============================================================================
+; Use the bundled DOS/4GW-compatible defaults when this extender is launched
+; through the classic DOS4GW.EXE replacement path.
+;
+apply_dos4gw_name_config:
+	pushf
+	push	ax bx cx si di ds es
+	push	cs
+	pop	ds
+	mov	ax,_seg_env
+	test	ax,ax
+	jz	@@done
+	mov	es,ax
+	xor	ax,ax
+	xor	di,di
+	mov	cx,0FFFFh
+@@env:	repne	scasb
+	jcxz	@@done
+	scasb
+	jcxz	@@done
+	jnz	@@env
+	inc	di
+	inc	di
+	mov	bx,di
+	mov	cx,0FFFFh
+@@end:	cmp	bptr es:[di],0
+	jz	@@end_found
+	inc	di
+	loop	@@end
+	jmp	@@done
+
+@@end_found:
+	mov	si,di
+@@base:	cmp	si,bx
+	jz	@@base_done
+	dec	si
+	mov	al,es:[si]
+	cmp	al,'\'
+	jz	@@base_next
+	cmp	al,'/'
+	jz	@@base_next
+	cmp	al,':'
+	jnz	@@base
+@@base_next:
+	inc	si
+@@base_done:
+	mov	ax,di
+	sub	ax,si
+	cmp	ax,6
+	jz	@@cmp_short
+	cmp	ax,10
+	jnz	@@done
+	mov	bx,offs _dos4gw_name_ext
+	mov	cx,10
+	jmp	@@cmp
+@@cmp_short:
+	mov	bx,offs _dos4gw_name
+	mov	cx,6
+@@cmp:	mov	al,es:[si]
+	cmp	al,'a'
+	jb	@@cmp_chr
+	cmp	al,'z'
+	ja	@@cmp_chr
+	sub	al,20h
+@@cmp_chr:
+	cmp	al,[bx]
+	jnz	@@done
+	inc	si
+	inc	bx
+	loop	@@cmp
+	call	set_dos4gw_config
+@@done:	pop	es ds di si cx bx ax
+	popf
+	ret
+
+
+set_dos4gw_config:
+	push	ds
+	mov	ax,_seg_kernel
+	mov	ds,ax
+	mov	bptr ds:[pm32_data+0],00001010b
+	mov	bptr ds:[pm32_data+1],16
+	mov	bptr ds:[pm32_data+2],4
+	mov	bptr ds:[pm32_data+3],16
+	mov	wptr ds:[pm32_data+4],1000h
+	mov	bptr ds:[pm32_data+6],8
+	mov	bptr ds:[pm32_data+7],8
+	mov	wptr ds:[pm32_data+8],40h
+	mov	wptr ds:[pm32_data+10],40h
+	mov	wptr ds:[pm32_data+12],0FFFFh
+	mov	wptr ds:[pm32_data+14],0FFFFh
+	pop	ds
+	mov	wptr _misc_byte,0D34h
+	mov	wptr _lowmembuf,0100h
+	ret
+
+;=============================================================================
 ; Report the standalone syntax error before protected mode is initialized.
 ;
 check_standalone_exec:
