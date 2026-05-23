@@ -146,6 +146,11 @@ void err_environment(void) {
 	printf("You need to reinstall DOS/32 Advanced DOS Extender on this computer\n");
 	exit(1);
 }
+void err_formpmw1(char *str) {
+	printf("%s cannot bind PMW1-compressed PMODE/W application \"%s\"\n",errstr,str);
+	printf("DOS/32A does not load PMW1 executable payloads\n");
+	exit(1);
+}
 
 
 
@@ -487,6 +492,8 @@ void main(int argc, char *argv[])
 		err_sameact();
 	if(bind)
 	{
+		if(Main_Type==5 || Exec_Type==5)
+			err_formpmw1(argv[execargn]);
 		BindExec(argv);
 		if(!silent) printf("SB/32A: File \"%s\" has been successfully bound\n", filename);
 	}

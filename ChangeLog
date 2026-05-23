@@ -14,6 +14,9 @@ SUNSYS Bind Utility (SB.EXE):
   instead of falling through to a byte scan that could match a false LC
   signature in game data.
 
++ Refuse to bind PMW1-compressed PMODE/W applications, including Death Rally,
+  instead of producing a DOS/32A-bound executable that fails at load time.
+
 
 
 
