@@ -454,7 +454,20 @@ load_exec_header:
 search_for_mz:
 	xor	esi,esi
 
-@@0:	movzx	eax,wptr [edx+04h]	; get pages in file
+@@0:	cmp	wptr [edx],'ZM'
+	jnz	@@size
+	mov	eax,[edx+18h]		; MZ reloc-tab must be at offset 0040h
+	cmp	ax,40h
+	jnz	@@size
+	mov	eax,[edx+3Ch]		; get start of 32-bit code
+	test	ax,ax			; check if exec is bound
+	jz	@@size
+	add	eax,ebp
+	mov	_exec_start,eax
+	mov	_app_off_datapages,ebp
+	ret
+
+@@size:	movzx	eax,wptr [edx+04h]	; get pages in file
 	shl	eax,9			; *512
 	movzx	ebx,wptr [edx+02h]	; get bytes on last page
 	add	eax,ebx

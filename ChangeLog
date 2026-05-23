@@ -3,6 +3,20 @@
 			*****************************************
 
 
+[Unreleased]
+DOS/32 Advanced DOS Extender, version 26.1
+==========================================
+
+SUNSYS Bind Utility (SB.EXE):
+-----------------------------
++ Fixed rebinding executables with chained MZ/BW/MZ/LE sections, including
+  IndyCar Racing II. SB/32A now honors the embedded MZ `e_lfanew` pointer
+  instead of falling through to a byte scan that could match a false LC
+  signature in game data.
+
+
+
+
 [2026-05-23]
 DOS/32 Advanced DOS Extender, version 26.0
 ==========================================
