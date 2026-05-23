@@ -39,7 +39,7 @@
 
 #include "main.h"
 
-	char*	version = "26.0";
+	char*	version = "26.1";
 	char*	errstr="SC/32A fatal:";
 
 	char*	bindname="SB.EXE";

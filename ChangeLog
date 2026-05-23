@@ -17,6 +17,10 @@ SUNSYS Bind Utility (SB.EXE):
 + Refuse to bind PMW1-compressed PMODE/W applications, including Death Rally,
   instead of producing a DOS/32A-bound executable that fails at load time.
 
+Build and release metadata:
+---------------------------
++ Updated DOS/32A and SUNSYS utility version identifiers to 26.1.
+
 
 
 
