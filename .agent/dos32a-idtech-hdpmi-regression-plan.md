@@ -27,6 +27,9 @@ The immediate goal is to diagnose efficiently despite the failure not reproducin
 - [x] (2026-05-23 17:42-04:00) Built `binw\dos32a.exe` successfully from the fixed source.
 - [x] (2026-05-23 17:44-04:00) Bound `dist\idtech-hdpmi-fixed-doom2.zip` from the fixed build for real-hardware confirmation.
 - [x] (2026-05-23 17:45-04:00) Ran DOSBox-X smoke with a 10-second timeout; SVER reported 26.1 and both loader paths returned successfully.
+- [x] (2026-05-23 17:47-04:00) Received real-hardware feedback that the fixed Doom II binary works, BUILD game write combining still works, and other id Tech games still freeze after loading graphics.
+- [x] (2026-05-23 17:49-04:00) Confirmed the older broad drive C patch package was built from commit `c54df59`, before the HDPMI id Tech fix.
+- [x] (2026-05-23 17:50-04:00) Built `dist\idtech-hdpmi-fixed-set.zip` from current commit `b77e519`, rebinding Doom, Doom II, Heretic, Hexen, Plutonia, and TNT from their `.BAK` files in two DOSBox-X batches under 10 seconds.
 
 ## Surprises & Discoveries
 
@@ -47,6 +50,12 @@ The immediate goal is to diagnose efficiently despite the failure not reproducin
 
 - Observation: The focused 26.1 probes show that forcing HDPMI32 as the external DPMI host is the failing path for Doom II, not the IOPL shortcut by itself.
   Evidence: User-updated results show `260NOHDP` as `pass`, `260NOIOP` as `pass`, and `260DPMI1` as `freeze` at `calling DMX_Init`; `260BASE` still freezes at `S_Init: Setting up sound.`
+
+- Observation: Doom II works with the fixed single-game package, and BUILD games still have working write combining, so the source fix did not regress the known BUILD use case.
+  Evidence: User report after testing `dist\idtech-hdpmi-fixed-doom2.zip`.
+
+- Observation: The other id Tech failures may still be from pre-fix executables rather than a second runtime issue.
+  Evidence: The older `dist\dos32a-26.1-drivec-patch\MANIFEST.TXT` was generated from commit `c54df59`; the HDPMI id Tech source fix is commit `b77e519`.
 
 ## Decision Log
 
@@ -74,11 +83,17 @@ The immediate goal is to diagnose efficiently despite the failure not reproducin
   Rationale: The passing `260NOHDP` probe removes only the two `@@detect_HDPMI` calls, while the failing `260DPMI1` probe proves that replacing those calls with normal early DPMI detection still freezes Doom II. The least invasive fix is to stop forcing HDPMI32 before the IOPL shortcut.
   Date/Author: 2026-05-23 / Codex
 
+- Decision: Package all main id Tech executables from the current fixed build before pursuing a new failure analysis.
+  Rationale: Doom II was the only binary explicitly rebound from the fixed source. The prior broad patch package predates the fix, so testing the other id Tech games with that package would not distinguish stale binaries from a second bug.
+  Date/Author: 2026-05-23 / Codex
+
 ## Outcomes & Retrospective
 
 Produced a real-hardware probe package at `dist\idtech-hdpmi-doom2-probes.zip`. It contains 13 Doom II executables, each in a directory named for the probe, plus a test plan and result sheet. The package is designed so the first seven tests should usually identify the relevant subsystem; the remaining tests provide file-level fallback if the high-value probes do not flip the result.
 
 The first probe package showed that current 26.1's Doom II failure is in `src\dos32a\text\kernel\detect.asm`, and that 8.00's reset is fixed by reverting `text\kernel\int31h.asm`. The focused detect-path package showed that Doom II passes when the HDPMI-specific shortcut is removed, but still freezes when normal DPMI detection is forced before the IOPL shortcut. The source now removes the `@@detect_HDPMI` shortcut and keeps normal DPMI detection behind the existing detection order and IOPL logic.
+
+The fixed Doom II binary passes on real hardware. Because the earlier broad game patch package predates the fix, a current id Tech-only package was generated at `dist\idtech-hdpmi-fixed-set.zip`. If those rebundled executables still freeze after loading graphics, the next phase should treat it as a separate post-video-init id Tech runtime issue rather than the already-fixed HDPMI detection shortcut.
 
 ## Context and Orientation
 
@@ -164,6 +179,9 @@ Observed local validation:
     Fixed source build: `build.cmd dos32a` completed with no assembler or linker errors.
     Fixed Doom II package: `dist\idtech-hdpmi-fixed-doom2.zip`, 302069 bytes.
     DOSBox-X smoke: passed with `-TimeoutSeconds 10`; SVER reported Version 26.1.
+    Fixed id Tech set package: `dist\idtech-hdpmi-fixed-set.zip`, 1785041 bytes.
+    Fixed id Tech set SVER logs report DOS/32A Version 26.1 for all six packaged executables.
+    Fixed id Tech set scratch directory `C:\DOSBox-X\drivec\D32ID` was removed; no DOSBox-X process remained.
 
 ## Idempotence and Recovery
 
@@ -191,6 +209,17 @@ Generated artifacts:
     dist\idtech-hdpmi-fixed-doom2\MANIFEST.TXT
     dist\idtech-hdpmi-fixed-doom2\SVER.LOG
     dist\idtech-hdpmi-fixed-doom2\APPLYFIX.BAT
+    dist\idtech-hdpmi-fixed-set.zip
+    dist\idtech-hdpmi-fixed-set\DOOM_SE\DOOM.EXE
+    dist\idtech-hdpmi-fixed-set\DOOM2\DOOM2.EXE
+    dist\idtech-hdpmi-fixed-set\HERETIC\HERETIC.EXE
+    dist\idtech-hdpmi-fixed-set\HEXEN\HEXEN.EXE
+    dist\idtech-hdpmi-fixed-set\PLUTONIA\DOOM2.EXE
+    dist\idtech-hdpmi-fixed-set\TNT\DOOM2.EXE
+    dist\idtech-hdpmi-fixed-set\APPLY-IDTECH.BAT
+    dist\idtech-hdpmi-fixed-set\UPDATE-IDTECH-FROM-DOS32A.BAT
+    dist\idtech-hdpmi-fixed-set\RESULTS.CSV
+    dist\idtech-hdpmi-fixed-set\MANIFEST.TXT
 
 The package directories `735GOOD`, `800BAD`, `260BASE`, `260NOKRM`, `260D735`, `800CLI`, `800DASM`, `800INIT`, `800I21`, `800MISC`, `800DET`, `800LOAD`, and `800I31` each contain a `DOOM2.EXE` probe.
 
@@ -209,3 +238,5 @@ Revision note, 2026-05-23 / Codex: Updated after reading the user's real-hardwar
 Revision note, 2026-05-23 / Codex: Updated after producing the focused 26.1 detect-path probe package and cleaning the DOSBox-X scratch drive.
 
 Revision note, 2026-05-23 / Codex: Updated after applying the source fix, building DOS32A.EXE, packaging a fixed Doom II confirmation binary, and running the DOSBox-X smoke test.
+
+Revision note, 2026-05-23 / Codex: Updated after Doom II passed on real hardware, BUILD write combining remained working, and a current fixed id Tech package was generated for the remaining games.
