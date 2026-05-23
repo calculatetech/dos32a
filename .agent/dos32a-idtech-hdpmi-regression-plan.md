@@ -19,6 +19,9 @@ The immediate goal is to diagnose efficiently despite the failure not reproducin
 - [x] (2026-05-23 16:57-04:00) Bound all 13 probes against `C:\DOSBox-X\drivec\DOOM2\DOOM2.BAK` in four DOSBox-X batches, each under 10 seconds. SVER verified expected embedded DOS/32A versions.
 - [x] (2026-05-23 16:58-04:00) Packaged probes at `dist\idtech-hdpmi-doom2-probes.zip` with `TESTPLAN.TXT`, `MANIFEST.TXT`, `RESULTS.CSV`, and `APPLYONE.BAT`.
 - [x] (2026-05-23 16:59-04:00) Removed temporary `C:\DOSBox-X\drivec\D32PROBE` and `dist\idtech-hdpmi-probes` scratch directories; no DOSBox-X processes or `D32*`/`.le` scratch files remained.
+- [x] (2026-05-23 17:15-04:00) Read the updated real-hardware results from `dist\idtech-hdpmi-doom2-probes\RESULTS.CSV`.
+- [x] (2026-05-23 17:23-04:00) Built a focused 26.1 detect-path package at `dist\idtech-hdpmi-detect-probes.zip`.
+- [x] (2026-05-23 17:24-04:00) Verified the package contains five bound Doom II probes and removed temporary `C:\DOSBox-X\drivec\D32DP`; no DOSBox-X processes remained.
 
 ## Surprises & Discoveries
 
@@ -30,6 +33,12 @@ The immediate goal is to diagnose efficiently despite the failure not reproducin
 
 - Observation: The current tree has a custom HDPMI detection path not present in 7.35 or 8.00.
   Evidence: `src\dos32a\text\kernel\detect.asm` contains `@@detect_HDPMI` and calls it before normal VCPI/DPMI detection.
+
+- Observation: Current 26.1 passes Doom II on the user's real hardware when only `detect.asm` is reverted to the 7.35 version, while disabling the external-DPMI `remove_kernel` call still freezes.
+  Evidence: User-updated results show `260D735` as `pass`, `260NOKRM` as `freeze` at `calling DMX_Init`, and `260BASE` as `freeze` at `S_Init: Setting up sound.`
+
+- Observation: The historical 8.00 reset is isolated to a different nearby subsystem than the current 26.1 freeze.
+  Evidence: User-updated results show every 8.00 reversion probe still resetting except `800I31`, which passes when 8.00 uses the 7.35 `text\kernel\int31h.asm`.
 
 ## Decision Log
 
@@ -49,11 +58,15 @@ The immediate goal is to diagnose efficiently despite the failure not reproducin
   Rationale: The 8.00 bad boundary identifies the historical source of the regression, but the actionable fix must land in 26.1. `260NOKRM` tests external-DPMI kernel compaction directly, and `260D735` tests whether the newer HDPMI detection path is involved.
   Date/Author: 2026-05-23 / Codex
 
+- Decision: Build a smaller 26.1-only detect-path probe package before editing the maintained source.
+  Rationale: Reverting all of `detect.asm` proves the current failure is in the detection path, but the 26.0 write-combining fix depends on detecting HDPMI32 even when the IOPL shortcut would otherwise skip DPMI probing. The next package must distinguish the HDPMI signature shortcut from normal DPMI detection ordered before the IOPL shortcut.
+  Date/Author: 2026-05-23 / Codex
+
 ## Outcomes & Retrospective
 
 Produced a real-hardware probe package at `dist\idtech-hdpmi-doom2-probes.zip`. It contains 13 Doom II executables, each in a directory named for the probe, plus a test plan and result sheet. The package is designed so the first seven tests should usually identify the relevant subsystem; the remaining tests provide file-level fallback if the high-value probes do not flip the result.
 
-No source fix has been made yet. The next step is to wait for real-hardware results for the probe names and outcomes: PASS, FREEZE, RESET, or OTHER.
+No source fix has been made yet. The first probe package showed that current 26.1's Doom II failure is in `src\dos32a\text\kernel\detect.asm`, and that 8.00's reset is fixed by reverting `text\kernel\int31h.asm`. The focused detect-path package is now available at `dist\idtech-hdpmi-detect-probes.zip`; it determines whether the fix can be a narrow replacement of the HDPMI-specific detection shortcut with normal DPMI detection before the IOPL shortcut.
 
 ## Context and Orientation
 
@@ -105,6 +118,14 @@ The probe names are:
     800LOAD   8.00 with 7.35 loader.asm
     800I31    8.00 with 7.35 int31h.asm
 
+Focused detect-path probe names are:
+
+    260BASE   current 26.1 detect path control
+    260D735   current 26.1 with full 7.35 detect.asm
+    260NOHDP  current 26.1 with only the HDPMI-specific shortcut calls disabled
+    260DPMI1  current 26.1 with the HDPMI shortcut replaced by normal early DPMI detection
+    260NOIOP  current 26.1 with the HDPMI shortcut disabled and the IOPL shortcut changed to run normal VCPI/DPMI tests
+
 ## Validation and Acceptance
 
 This phase is acceptable when:
@@ -125,6 +146,9 @@ Observed local validation:
     800* probes SVER: Release 9, Version 8.0.
     260* probes SVER: Version 26.1.
     Zip entries: 17.
+    Focused package extenders built: 260BASE, 260D735, 260NOHDP, 260DPMI1, 260NOIOP.
+    Focused package Doom II probes bound from DOOM2.BAK in two DOSBox-X batches, each under 10 seconds.
+    Focused package zip size: 1413883 bytes.
 
 ## Idempotence and Recovery
 
@@ -141,8 +165,15 @@ Generated artifacts:
     dist\idtech-hdpmi-doom2-probes\MANIFEST.TXT
     dist\idtech-hdpmi-doom2-probes\RESULTS.CSV
     dist\idtech-hdpmi-doom2-probes\APPLYONE.BAT
+    dist\idtech-hdpmi-detect-probes.zip
+    dist\idtech-hdpmi-detect-probes\TESTPLAN.TXT
+    dist\idtech-hdpmi-detect-probes\MANIFEST.TXT
+    dist\idtech-hdpmi-detect-probes\RESULTS.CSV
+    dist\idtech-hdpmi-detect-probes\APPLYONE.BAT
 
 The package directories `735GOOD`, `800BAD`, `260BASE`, `260NOKRM`, `260D735`, `800CLI`, `800DASM`, `800INIT`, `800I21`, `800MISC`, `800DET`, `800LOAD`, and `800I31` each contain a `DOOM2.EXE` probe.
+
+The focused detect-path package directories `260BASE`, `260D735`, `260NOHDP`, `260DPMI1`, and `260NOIOP` each contain a `DOOM2.EXE` probe.
 
 ## Interfaces and Dependencies
 
@@ -151,3 +182,7 @@ The build depends on Open Watcom at `C:\WATCOM`, TASM 5.3 under `tasm5`, and DOS
 Revision note, 2026-05-23 / Codex: Initial investigation plan created after the user reported 7.35 passes and 8.00 resets with HDPMI32 on real hardware.
 
 Revision note, 2026-05-23 / Codex: Updated after producing and validating the Doom II probe package, recording candidate change buckets, probe names, package path, and cleanup status.
+
+Revision note, 2026-05-23 / Codex: Updated after reading the user's real-hardware results. `260D735` isolates the current 26.1 failure to `detect.asm`; `800I31` isolates the historical 8.00 reset to the INT 31h handler.
+
+Revision note, 2026-05-23 / Codex: Updated after producing the focused 26.1 detect-path probe package and cleaning the DOSBox-X scratch drive.
