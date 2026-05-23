@@ -6,3 +6,4 @@
 - [x] Restore setup display/help for the first kernel option and leave the second option reserved.
 - [x] Port only the approved `dec ecx`/`jnz` loop speed changes.
 - [x] Preserve existing VCPI PIC validation, `fastimul`, and VCPI page attribute behavior.
+- [x] User confirmed the write-combining fix on real hardware, with about +20 FPS in Redneck Rampage.

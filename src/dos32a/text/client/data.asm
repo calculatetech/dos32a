@@ -236,7 +236,7 @@ If EXEC_TYPE eq 2
 	db 'BETA '
 EndIf
 	db 'version '
-ver_msg	db 'x.x.x',cr
+ver_msg	db 'xx.x',cr
 	db 'Copyright (C) 1996-2006 by Narech K.',cr
 cpr_end	label byte
 

@@ -3,6 +3,27 @@
 			*****************************************
 
 
+[2026-05-23]
+DOS/32 Advanced DOS Extender, version 26.0
+==========================================
+
+First stable release of this maintained DOS/32A tree.
+
+DOS Extender (DOS32A.EXE):
+--------------------------
++ Verified on real hardware as a DOS/4GW replacement for Redneck Rampage.
+
++ Restored HDPMI32 write-combining behavior for linear frame buffers, producing
+  a measured +20 FPS improvement in Redneck Rampage on the user's hardware.
+
++ Fixed Open Watcom linker layout for the external DOS32A.EXE program loader.
+
++ Fixed Redneck Rampage startup by safely failing the MSCDEX INT 2Fh AX=1510h
+  simulated real-mode request instead of corrupting caller state.
+
+
+
+
 [2006-04-20]
 DOS/32 Advanced DOS Extender, version 9.1.2
 ===========================================

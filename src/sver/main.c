@@ -43,7 +43,7 @@
 #include <typedefs.h>
 
 
-	char*	version		= "9.1.2";
+	char*	version		= "26.0";
 	char*	errstr		= "SVER fatal:";
 
 	int		fileisbound	= TRUE;
@@ -302,6 +302,8 @@ void ShowExtenderVersion()
 	printf("Release:        %d\n",		extender_release);
 
 	if(extender_major_version < 9)
+	printf("Version:        %d.%d\n",	extender_major_version, extender_minor_version);
+	else if(extender_major_version >= 10)
 	printf("Version:        %d.%d\n",	extender_major_version, extender_minor_version);
 	else
 	printf("Version:        %d.%d.%d\n",	extender_major_version, extender_minor_version/10, extender_minor_version%10);

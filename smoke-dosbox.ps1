@@ -160,13 +160,13 @@ if (-not $logText.Contains('APP_SMOKE_OK')) {
     Show-SmokeLogTail -Path $log
     Exit-Smoke 1
 }
-if (-not $logText.Contains('Version:        9.1.2')) {
-    Write-Host 'SVER did not report DOS/32A version 9.1.2.'
+if (-not $logText.Contains('Version:        26.0')) {
+    Write-Host 'SVER did not report DOS/32A version 26.0.'
     Show-SmokeLogTail -Path $log
     Exit-Smoke 1
 }
 
-Select-String -Path $log -Pattern 'SVER -- Version|Version:        9\.1\.2|SVER_SMOKE_OK|DIRECT_LOADER_SMOKE_OK|DOS32A_SMOKE_OK|Hello world from protected mode!!!|APP_SMOKE_OK' |
+Select-String -Path $log -Pattern 'SVER -- Version|Version:        26\.0|SVER_SMOKE_OK|DIRECT_LOADER_SMOKE_OK|DOS32A_SMOKE_OK|Hello world from protected mode!!!|APP_SMOKE_OK' |
     ForEach-Object { $_.Line -replace '^\s*DOS CON:\s*', '' }
 
 Write-Host "DOSBox-X smoke passed using temporary staged files in $standStage and $appStage."

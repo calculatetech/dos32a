@@ -1,14 +1,15 @@
 # DOS/32 Advanced DOS Extender
 
 This repository preserves and maintains the DOS/32 Advanced DOS Extender
-source. The active tree is the DOS/32A 9.1.2 source under `src/`, with older
-7.35 and 8.00 trees kept as historical references.
+source. The active tree is the DOS/32A 26.0 stable release under `src/`, with
+older 7.35 and 8.00 trees kept as historical references.
 
 DOS/32A is a 32-bit DOS extender and a drop-in replacement for DOS/4GW and
 compatible extenders. The maintenance goal is to combine useful fixes and
 behavior from the 7.35, 8.00, and 9.1.2 releases: HDPMI32 compatibility for
 linear frame buffer write-combining, the 8.00 speed-loop changes, and the 9.x
-SSE support.
+SSE support. Version 26.0 is the first stable release from this maintained
+line.
 
 ## Repository Layout
 
@@ -28,7 +29,7 @@ and the HTML documentation under `dos32a_800/docs/`.
 
 ## Windows Build Setup
 
-The active 9.1.2 sources are built with the historical DOS toolchain family.
+The active 26.0 sources are built with the historical DOS toolchain family.
 This checkout provides Windows batch wrappers so the tools do not need to be
 added to the machine-wide `PATH`.
 
@@ -65,7 +66,7 @@ persist back into a parent PowerShell session.
 
 ## Building
 
-Build all active 9.1.2 components:
+Build all active 26.0 components:
 
 ```bat
 build.cmd
@@ -111,17 +112,19 @@ After `build.cmd`, run:
 smoke-dosbox.cmd
 ```
 
-The smoke test mounts this checkout in DOSBox-X and runs:
+The smoke test stages temporary files under `C:\DOSBox-X\drivez` and runs:
 
 ```bat
-binw\sver.exe binw\dos32a.exe
+SVER.EXE DOS32A.EXE
+DOS32A.EXE HELLO.EXE
+AHELLO.EXE
 ```
 
 A successful run reports the generated DOS/32A version, for example:
 
 ```text
 DOS/32 Advanced DOS Extender:
-Version:        9.1.2
+Version:        26.0
 ```
 
 ## Validation

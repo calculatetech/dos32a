@@ -470,7 +470,10 @@ void ShowMemory()
 		Print_At(9,26,"N/A");
 	else
 	{
-		Print_At(9,25,"%d.%02d",(id32.dos32a_version&0xFF00)>>8,id32.dos32a_version&0x00FF);
+		if(((id32.dos32a_version&0xFF00)>>8)>=10)
+			Print_At(9,25,"%d.%d",(id32.dos32a_version&0xFF00)>>8,id32.dos32a_version&0x00FF);
+		else
+			Print_At(9,25,"%d.%02d",(id32.dos32a_version&0xFF00)>>8,id32.dos32a_version&0x00FF);
 		if((id32.dos32a_misc2&0x80)!=0x80)
 			/* Professional */
 			//Print_At(9,21,"Pro");

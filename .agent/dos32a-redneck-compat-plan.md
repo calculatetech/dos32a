@@ -56,7 +56,7 @@ The user-visible proof is not merely returning to DOS. For Redneck Rampage, the 
 
 ## Outcomes & Retrospective
 
-The repository now builds a DOS/32A executable that passes the direct external-loader smoke and reaches Redneck Rampage's expected startup flow when installed as `C:\DOSBox-X\drivez\REDNECK\DOS4GW.EXE`. The work found two separate issues: a modern Open Watcom link layout mismatch that broke `DOS32A.EXE program.exe`, and a Redneck-specific MSCDEX simulated-interrupt path that could corrupt caller state and triple-fault or hard-lock. The remaining DOSBox-X FPU warning is logged but does not block the accepted Redneck behavior.
+The repository now builds a DOS/32A executable that passes the direct external-loader smoke and reaches Redneck Rampage's expected startup flow when installed as `C:\DOSBox-X\drivez\REDNECK\DOS4GW.EXE`. The work found two separate issues: a modern Open Watcom link layout mismatch that broke `DOS32A.EXE program.exe`, and a Redneck-specific MSCDEX simulated-interrupt path that could corrupt caller state and triple-fault or hard-lock. The remaining DOSBox-X FPU warning is logged but does not block the accepted Redneck behavior. The user later confirmed the fixed extender works on real hardware, write combining is fixed there, and Redneck Rampage gains about 20 FPS; that result promoted the maintained tree to the 26.0 stable release.
 
 ## Context and Orientation
 
@@ -92,8 +92,8 @@ Run the automated DOSBox-X smoke with a 10 second cap:
 
 Expected smoke evidence:
 
-    SVER -- Version Reporting Utility version 9.1.2
-    Version:        9.1.2
+    SVER -- Version Reporting Utility version 26.0
+    Version:        26.0
     SVER_SMOKE_OK
     Hello world from protected mode!!!
     DIRECT_LOADER_SMOKE_OK
@@ -144,8 +144,8 @@ Temporary `RR.EXE` binary probes are not part of the solution. If future debuggi
 
 The final automated smoke passed with this concise evidence:
 
-    SVER -- Version Reporting Utility version 9.1.2
-    Version:        9.1.2
+    SVER -- Version Reporting Utility version 26.0
+    Version:        26.0
     SVER_SMOKE_OK
     Hello world from protected mode!!!
     DIRECT_LOADER_SMOKE_OK
@@ -165,3 +165,7 @@ The final Redneck run passed the accepted signature. The sound setup failure is 
 The local build depends on Open Watcom under `C:\WATCOM`, TASM 5.3 setup files under `tasm5`, and DOSBox-X under `C:\DOSBox-X`. The repository scripts used by this plan are `build.cmd`, `build-env.cmd`, `smoke-dosbox.cmd`, and `smoke-dosbox.ps1`. The source files modified by this plan are `build.cmd`, `smoke-dosbox.ps1`, and `src\dos32a\text\kernel\int31h.asm`.
 
 Revision note: Replaced the stale plan text after the user clarified that a bare return from `rr.exe` is a failure. This revision records the real acceptance signature, the Open Watcom link-layout fix, the direct external-loader smoke coverage, and the MSCDEX simulated-interrupt compatibility fix.
+
+Revision note: Updated expected smoke version output after the maintained tree was promoted to the 26.0 stable release.
+
+Revision note: Recorded the user's real-hardware confirmation that Redneck Rampage works and gains about 20 FPS after the write-combining fix.

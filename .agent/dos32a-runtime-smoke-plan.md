@@ -65,8 +65,8 @@ Validated outcome: direct standalone execution of the rebuilt `DOS32A.EXE` no lo
 
 Validation evidence from `.\smoke-dosbox.cmd`:
 
-    SVER -- Version Reporting Utility version 9.1.2
-    Version:        9.1.2
+    SVER -- Version Reporting Utility version 26.0
+    Version:        26.0
     SVER_SMOKE_OK
     DOS32A_SMOKE_OK
     Hello world from protected mode!!!
@@ -75,7 +75,7 @@ Validation evidence from `.\smoke-dosbox.cmd`:
 
 ## Context and Orientation
 
-The active DOS/32A 9.1.2 extender sources live in `src\dos32a`. The top-level `build.cmd` builds the active extender by assembling `src\dos32a\kernel.asm` and `src\dos32a\dos32a.asm` with `tasm5\PATCHES\53_WIN\TASM32.EXE`, linking with Open Watcom, and copying the result to `binw\dos32a.exe`. The top-level `smoke-dosbox.cmd` starts DOSBox-X and delegates to `smoke-dosbox.ps1`, which stages files under `C:\DOSBox-X\drivez` instead of mounting the repository. `sver.exe` is a version-reporting utility, not the extender itself, so the smoke must also execute the extender and a protected-mode sample.
+The active DOS/32A 26.0 extender sources live in `src\dos32a`. The top-level `build.cmd` builds the active extender by assembling `src\dos32a\kernel.asm` and `src\dos32a\dos32a.asm` with `tasm5\PATCHES\53_WIN\TASM32.EXE`, linking with Open Watcom, and copying the result to `binw\dos32a.exe`. The top-level `smoke-dosbox.cmd` starts DOSBox-X and delegates to `smoke-dosbox.ps1`, which stages files under `C:\DOSBox-X\drivez` instead of mounting the repository. `sver.exe` is a version-reporting utility, not the extender itself, so the smoke must also execute the extender and a protected-mode sample.
 
 The user reported that executing `dos32a.exe` directly displays version and copyright text and then DOSBox-X raises a dialog with `JMP Illegal descriptor type 0`. In this plan, "standalone execution" means running the staged flat `DOS32A.EXE` directly from DOSBox-X, without using it to load another protected-mode program. "External-load execution" means running `AHELLO.EXE`, where `AHELLO.EXE` is copied from `dos32a_800\examples\asm_1\hello.exe`; that executable contains `STUB/32A`, a small real-mode launcher that locates `BINW\DOS32A.EXE` through `SET DOS32A=Z:\D32Axxxx` and then starts the extender.
 
@@ -87,7 +87,7 @@ Revision: The final smoke harness no longer mounts the repository into DOSBox-X.
 
 Next, inspect `src\dos32a\dos32a.asm`, `src\dos32a\kernel.asm`, and included files under `src\dos32a\text` for the code path used when DOS/32A is executed with no client program. If the standalone path should only print the banner and terminate, the fix should make that path return to DOS before attempting an invalid far jump or descriptor switch.
 
-The handoff sequence in `src\dos32a\dos32a.asm` was tested against the older DOS/32A source trees. The normal 7.35 and 8.00 path switches to the application stack, pushes the application code selector and entry offset, enables interrupts, and uses a 32-bit far return. The active 9.1.2 path instead builds an interrupt-return frame and uses `IRETD`. Restoring the far-return handoff did not fix the bad manual invocation, and the original active `IRETD` handoff works in the supported stub-driven layout, so no source handoff change is part of this plan.
+The handoff sequence in `src\dos32a\dos32a.asm` was tested against the older DOS/32A source trees. The normal 7.35 and 8.00 path switches to the application stack, pushes the application code selector and entry offset, enables interrupts, and uses a 32-bit far return. The active maintained path instead builds an interrupt-return frame and uses `IRETD`. Restoring the far-return handoff did not fix the bad manual invocation, and the original active `IRETD` handoff works in the supported stub-driven layout, so no source handoff change is part of this plan.
 
 Finally, update `smoke-dosbox.cmd` and `smoke-dosbox.ps1` so they validate `sver.exe` inspection, direct extender execution, and external sample execution through `STUB/32A`. The script must remain usable from PowerShell or Command Prompt and should clean up temporary files.
 
@@ -110,7 +110,7 @@ The external-load smoke stages the active extender and sample under a test direc
 
 ## Validation and Acceptance
 
-The final acceptance is that `.\smoke-dosbox.cmd` returns exit code 0 only when all checks pass: staged `SVER.EXE DOS32A.EXE` reports DOS/32A version `9.1.2`, direct execution of staged `DOS32A.EXE` returns to DOSBox-X so the `DOS32A_SMOKE_OK` sentinel echo appears in the DOSBox-X log, and `AHELLO.EXE` prints `Hello world from protected mode!!!` before the `APP_SMOKE_OK` sentinel appears. A failure containing `JMP Illegal descriptor type 0`, `Illegal descriptor`, `DYNX86:Can't run code`, `ERROR CPU`, a missing sentinel, or a nonzero DOSBox-X exit must make the smoke script return nonzero.
+The final acceptance is that `.\smoke-dosbox.cmd` returns exit code 0 only when all checks pass: staged `SVER.EXE DOS32A.EXE` reports DOS/32A version `26.0`, direct execution of staged `DOS32A.EXE` returns to DOSBox-X so the `DOS32A_SMOKE_OK` sentinel echo appears in the DOSBox-X log, and `AHELLO.EXE` prints `Hello world from protected mode!!!` before the `APP_SMOKE_OK` sentinel appears. A failure containing `JMP Illegal descriptor type 0`, `Illegal descriptor`, `DYNX86:Can't run code`, `ERROR CPU`, a missing sentinel, or a nonzero DOSBox-X exit must make the smoke script return nonzero.
 
 ## Idempotence and Recovery
 
@@ -129,3 +129,5 @@ Revision note: Created this plan to guide automatic reproduction and repair of t
 Revision note: Expanded the plan after the user reported that external program loading still crashes. The plan now covers the external-load scenario, the historical hello sample used for reproduction, and the suspected final handoff sequence in `src\dos32a\dos32a.asm`.
 
 Revision note: Recorded that the handoff sequence was not changed and that the smoke test now uses fresh top-level `drivez` directories plus the expected `DOS32A=<root>` and `BINW\DOS32A.EXE` layout to exercise a real `STUB/32A` protected-mode sample.
+
+Revision note: Updated expected version output after the maintained tree was promoted to the 26.0 stable release.

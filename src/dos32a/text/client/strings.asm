@@ -121,13 +121,13 @@ copyright:
 	push	ax
 	mov	al,ah
 	aam
-	add	al,30h
-	mov	[bx+0],al
+	add	ax,3030h
+	mov	[bx+0],ah
+	mov	[bx+1],al
 	pop	ax
 	aam
-	add	ax,3030h
-	mov	[bx+2],ah
-	mov	[bx+4],al
+	add	al,30h
+	mov	[bx+3],al
 	mov	cx,offs cpr_end - offs cpr_msg
 @@1:	lodsb
 	push	cx

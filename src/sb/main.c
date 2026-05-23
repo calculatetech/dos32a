@@ -39,7 +39,7 @@
 
 #include "main.h"
 
-	char*	version = "9.1.2";
+	char*	version = "26.0";
 	char	newname[80];
 	char	newname2[80];
 	char	filename[80];
