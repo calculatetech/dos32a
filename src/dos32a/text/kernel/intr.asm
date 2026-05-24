@@ -433,34 +433,16 @@ irq_standard:				; Standard IRQ handler that will send
 	sub	ax,offs std_matrix+1	; protected mode to real mode
 	shr	ax,2
 
+	test	al,al			; S2 chains IRQ0 after already EOIing it
+	jz	irq_standard_irq0done
+
 	pushad
 	push	ds es fs gs
 	mov	ds,cs:seldata
 
-	mov	dx,ss			; save original app SS:ESP
-	lea	ebx,[esp+40]
-	mov	edi,pmstacktop		; switch to DOS/32A's PM stack
-	mov	esi,edi
-	sub	esi,pmstacklen
-	cmp	esi,pmstackbase
-	jb	irq_standard_pmstackfail
-	mov	pmstacktop,esi
-	lea	ebp,[edi-46]
-	mov	esi,esp
-	mov	edi,ebp
-	mov	es,selzero
-	mov	ecx,10
-	cld
-	rep	movs dptr es:[edi],ss:[esi]
-	mov	dptr es:[edi],ebx
-	mov	wptr es:[edi+4],dx
-	mov	ax,SELZERO
-	mov	ss,ax
-	mov	esp,ebp
-
 	inc	_pc_irqpmtorm		; increment IRQ PM->RM counter
 
-	movzx	eax,wptr [esp+36]	; EAX = IRQ number
+	movzx	eax,al			; EAX = IRQ number
 
 	mov	dx,rmstacktop		; DX = SS for real mode redirection
 	mov	bx,rmstacklen		; get size of real mode stack
@@ -497,21 +479,11 @@ irq_standard:				; Standard IRQ handler that will send
 	mov	ax,rmstacklen		; restore top of real mode stack
 	add	rmstacktop,ax
 
-	mov	eax,pmstacklen		; release DOS/32A PM stack
-	add	pmstacktop,eax
-
 	pop	gs fs es ds		; restore all registers
 	popad
-	lss	esp,fptr [esp]		; restore original app SS:ESP
+irq_standard_irq0done:
 	pop	ax			; restore original AX
 	iretd
-
-irq_standard_pmstackfail:
-	pop	gs fs es ds
-	popad
-	mov	ds,cs:seldata
-	mov	ax,8300h
-	jmp	dptr client_call
 
 
 
