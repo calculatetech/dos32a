@@ -433,9 +433,6 @@ irq_standard:				; Standard IRQ handler that will send
 	sub	ax,offs std_matrix+1	; protected mode to real mode
 	shr	ax,2
 
-	test	al,al			; S2 chains IRQ0 after already EOIing it
-	jz	irq_standard_irq0done
-
 	pushad
 	push	ds es fs gs
 	mov	ds,cs:seldata
@@ -481,8 +478,13 @@ irq_standard:				; Standard IRQ handler that will send
 
 	pop	gs fs es ds		; restore all registers
 	popad
-irq_standard_irq0done:
 	pop	ax			; restore original AX
+	verr	wptr ss:[esp+4]		; verify IRETD target selector
+	jz	irq_standard_iret
+	verr	wptr ss:[esp+8]		; tolerate DOS/4GW-style chain frame
+	jnz	irq_standard_iret
+	add	esp,4
+irq_standard_iret:
 	iretd
 
 
