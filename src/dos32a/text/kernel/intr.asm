@@ -437,10 +437,30 @@ irq_standard:				; Standard IRQ handler that will send
 	push	ds es fs gs
 	mov	ds,cs:seldata
 
+	mov	dx,ss			; save original app SS:ESP
+	lea	ebx,[esp+40]
+	mov	edi,pmstacktop		; switch to DOS/32A's PM stack
+	mov	esi,edi
+	sub	esi,pmstacklen
+	cmp	esi,pmstackbase
+	jb	irq_standard_pmstackfail
+	mov	pmstacktop,esi
+	lea	ebp,[edi-46]
+	mov	esi,esp
+	mov	edi,ebp
+	mov	es,selzero
+	mov	ecx,10
+	cld
+	rep	movs dptr es:[edi],ss:[esi]
+	mov	dptr es:[edi],ebx
+	mov	wptr es:[edi+4],dx
+	mov	ax,SELZERO
+	mov	ss,ax
+	mov	esp,ebp
+
 	inc	_pc_irqpmtorm		; increment IRQ PM->RM counter
 
-	movzx	eax,al			; EAX = IRQ number
-	mov	irqstd_irq,ax		; save IRQ number across PIC masking
+	movzx	eax,wptr [esp+36]	; EAX = IRQ number
 
 	mov	dx,rmstacktop		; DX = SS for real mode redirection
 	mov	bx,rmstacklen		; get size of real mode stack
@@ -451,27 +471,6 @@ irq_standard:				; Standard IRQ handler that will send
 	jb	critical_error_rm	; if yes, critical error
 	mov	rmstacktop,dx		; update ptr for possible reenterancy
 	shl	bx,4			; set real mode SP to top of stack
-	mov	irqstd_rmsp,bx		; save real mode SP across PIC masking
-
-	mov	bx,ax			; mask this IRQ while reflecting to RM
-	mov	dx,21h
-	cmp	bl,8
-	jb	@@mask_irq
-	mov	dx,0A1h
-	sub	bl,8
-@@mask_irq:
-	in	al,dx
-	mov	ah,al
-	mov	cl,bl
-	mov	bl,1
-	shl	bl,cl
-	or	al,bl
-	out	dx,al
-	mov	al,ah			; save old mask and PIC port
-	mov	ah,dl
-	mov	irqstd_mask,ax
-	movzx	eax,irqstd_irq		; EAX = IRQ number
-	mov	bx,irqstd_rmsp		; restore real mode SP
 
 	mov	edi,irqtab_rm[eax*4]	; get real mode interrupt CS:IP
 	mov	ds,selzero		; DS -> 0 (beginning of memory)
@@ -498,32 +497,21 @@ irq_standard:				; Standard IRQ handler that will send
 	mov	ax,rmstacklen		; restore top of real mode stack
 	add	rmstacktop,ax
 
-	mov	ax,irqstd_mask		; restore previous mask bit only
-	mov	dl,ah
-	xor	dh,dh
-	mov	bh,al
-	mov	cx,irqstd_irq
-	cmp	cl,8
-	jb	@@restore_mask
-	sub	cl,8
-@@restore_mask:
-	mov	bl,1
-	shl	bl,cl
-	in	al,dx
-	test	bh,bl
-	jnz	@@set_mask_bit
-	not	bl
-	and	al,bl
-	jmp	@@write_mask
-@@set_mask_bit:
-	or	al,bl
-@@write_mask:
-	out	dx,al
+	mov	eax,pmstacklen		; release DOS/32A PM stack
+	add	pmstacktop,eax
 
 	pop	gs fs es ds		; restore all registers
 	popad
+	lss	esp,fptr [esp]		; restore original app SS:ESP
 	pop	ax			; restore original AX
 	iretd
+
+irq_standard_pmstackfail:
+	pop	gs fs es ds
+	popad
+	mov	ds,cs:seldata
+	mov	ax,8300h
+	jmp	dptr client_call
 
 
 

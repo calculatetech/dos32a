@@ -172,9 +172,6 @@ rmstacklen	equ @area1_dw+230h	;dw 0; real mode stack size in para
 rmstackbase	equ @area1_dw+232h	;dw 0; bottom of real mode stack area
 rmstacktop	equ @area1_dw+234h	;dw 0; top of real mode stack area
 rmstacktop2	equ @area1_dw+236h	;dw 0
-irqstd_mask	equ @area1_dw+238h	;dw 0; saved PIC mask/port for standard IRQ reflection
-irqstd_irq	equ @area1_dw+23Ah	;dw 0; saved IRQ number for standard IRQ reflection
-irqstd_rmsp	equ @area1_dw+23Ch	;dw 0; saved RM SP for standard IRQ reflection
 rmstackesp	equ @area1_dd+240h	;dd 0; for functions 0300h,0301h,0302h
 rmstackss	equ @area1_dw+244h	;dw 0
 callbackbase	equ @area1_dd+248h	;dd 0; base of real mode callbacks
