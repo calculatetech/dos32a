@@ -440,7 +440,7 @@ irq_standard:				; Standard IRQ handler that will send
 	inc	_pc_irqpmtorm		; increment IRQ PM->RM counter
 
 	movzx	eax,al			; EAX = IRQ number
-	sub	esp,4			; local IRQ number and saved PIC mask
+	sub	esp,8			; local IRQ number, PIC mask, RM SP
 	mov	wptr [esp+2],ax
 
 	mov	dx,rmstacktop		; DX = SS for real mode redirection
@@ -452,6 +452,7 @@ irq_standard:				; Standard IRQ handler that will send
 	jb	critical_error_rm	; if yes, critical error
 	mov	rmstacktop,dx		; update ptr for possible reenterancy
 	shl	bx,4			; set real mode SP to top of stack
+	mov	wptr [esp+4],bx		; save real mode SP across PIC masking
 
 	mov	bx,ax			; mask this IRQ while reflecting to RM
 	mov	dx,21h
@@ -471,6 +472,7 @@ irq_standard:				; Standard IRQ handler that will send
 	mov	ah,dl
 	mov	wptr [esp],ax
 	movzx	eax,wptr [esp+2]	; EAX = IRQ number
+	mov	bx,wptr [esp+4]		; restore real mode SP
 
 	mov	edi,irqtab_rm[eax*4]	; get real mode interrupt CS:IP
 	mov	ds,selzero		; DS -> 0 (beginning of memory)
@@ -518,7 +520,7 @@ irq_standard:				; Standard IRQ handler that will send
 	or	al,bl
 @@write_mask:
 	out	dx,al
-	add	esp,4
+	add	esp,8
 
 	pop	gs fs es ds		; restore all registers
 	popad
