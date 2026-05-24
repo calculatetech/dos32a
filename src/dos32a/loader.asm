@@ -589,8 +589,16 @@ create_selector:
 	or	ecx,-1			; set limit to 4Gb
 
 	test	al,0004h		; check if code or data Object
+	jz	@@data32		; if data, then jump
 	mov	ax,_sel32_cs		; AX = 32bit code selector
-	jnz	@@0			; if code, then jump
+	test	ax,ax			; check if already allocated
+	jnz	@@4			; if yes, use this selector
+	cmp	_sel32_ss,0		; can we reserve CS+8 as DATA_32?
+	jnz	@@3			; if no, allocate a single code selector
+	call	set_descriptor_pair	; DOS/4GW-style CODE_32/DATA_32 pair
+	jc	dpmi_error
+	jmp	@@4
+@@data32:
 	mov	ax,_sel32_ss		; AX = 32bit data selector
 @@0:	test	ax,ax			; check if already allocated
 	jnz	@@4			; if yes, use this selector
@@ -619,6 +627,65 @@ create_selector:
 	mov	_unreloc_esp,edi
 	add	_app_esp,edi		; adjust ESP
 @@l2:	ret
+
+
+;-----------------------------------------------------------------------------
+; Allocate adjacent flat 32-bit code/data selectors.
+; Some DOS/4GW clients derive the data selector as CS+8 in interrupt stubs.
+;
+set_descriptor_pair:
+	push	ebx ecx edx esi edi ebp
+	mov	ebp,ecx			; preserve limit
+	mov	si,dx			; preserve code access rights
+	xor	ax,ax			; allocate descriptors
+	mov	cx,2
+	int	31h
+	jc	@@err
+	mov	bx,ax			; BX = code selector
+
+	mov	ax,0009h		; set code access rights
+	mov	cx,si
+	int	31h
+	jc	@@err
+	mov	ax,0008h		; set code limit
+	mov	ecx,ebp
+	mov	dx,cx
+	shr	ecx,16
+	int	31h
+	jc	@@err
+	mov	ax,0007h		; set code base
+	mov	ecx,edi
+	mov	dx,cx
+	shr	ecx,16
+	int	31h
+	jc	@@err
+
+	mov	ax,bx			; AX = data selector
+	add	ax,8
+	mov	_sel32_ss,ax
+	mov	bx,ax
+	mov	dx,si
+	and	dl,0F7h			; convert code access to data access
+	mov	ax,0009h		; set data access rights
+	mov	cx,dx
+	int	31h
+	jc	@@err
+	mov	ax,0008h		; set data limit
+	mov	ecx,ebp
+	mov	dx,cx
+	shr	ecx,16
+	int	31h
+	jc	@@err
+	mov	ax,0007h		; set data base
+	mov	ecx,edi
+	mov	dx,cx
+	shr	ecx,16
+	int	31h
+	jc	@@err
+	mov	ax,bx			; return code selector
+	sub	ax,8
+@@err:	pop	ebp edi esi edx ecx ebx
+	ret
 
 
 preload_fixups:
