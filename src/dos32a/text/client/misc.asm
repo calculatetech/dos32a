@@ -131,6 +131,146 @@ apply_dos4gw_name_config:
 	ret
 
 
+;=============================================================================
+; Force the HDPMI32 path for known BUILD-engine launch targets.
+;
+apply_hdpmi_name_config:
+	pushf
+	push	ax bx cx dx si di ds es
+	push	cs
+	pop	ds
+	call	get_self_basename
+	jc	@@cmd
+	call	match_hdpmi_build_name
+	jc	@@force
+@@cmd:	mov	ax,_seg_es		; ES = PSP for command line
+	mov	es,ax
+	call	check_command_line
+	test	si,si
+	jz	@@done
+	call	basename_from_token
+	call	match_hdpmi_build_name
+	jnc	@@done
+@@force:
+	call	set_hdpmi_force
+@@done:	pop	es ds di si dx cx bx ax
+	popf
+	ret
+
+
+get_self_basename:
+	mov	ax,_seg_env
+	test	ax,ax
+	jz	@@fail
+	mov	es,ax
+	xor	ax,ax
+	xor	di,di
+	mov	cx,0FFFFh
+@@env:	repne	scasb
+	jcxz	@@fail
+	scasb
+	jcxz	@@fail
+	jnz	@@env
+	inc	di
+	inc	di
+	mov	bx,di
+	mov	cx,0FFFFh
+@@end:	cmp	bptr es:[di],0
+	jz	@@end_found
+	inc	di
+	loop	@@end
+	jmp	@@fail
+@@end_found:
+	call	basename_from_range
+	clc
+	ret
+@@fail:	stc
+	ret
+
+
+basename_from_token:
+	mov	bx,si
+	mov	di,si
+	add	di,cx
+
+basename_from_range:
+	mov	si,di
+@@base:	cmp	si,bx
+	jz	@@base_done
+	dec	si
+	mov	al,es:[si]
+	cmp	al,'\'
+	jz	@@base_next
+	cmp	al,'/'
+	jz	@@base_next
+	cmp	al,':'
+	jnz	@@base
+@@base_next:
+	inc	si
+@@base_done:
+	mov	cx,di
+	sub	cx,si
+	ret
+
+
+match_hdpmi_build_name:
+	push	bx
+	mov	bx,offs _hdpmi_build_names
+	call	match_name_table
+	pop	bx
+	ret
+
+
+match_name_table:
+	push	ax bx cx dx si di
+@@next:	mov	dl,[bx]
+	test	dl,dl
+	jz	@@no
+	inc	bx
+	xor	dh,dh
+	cmp	cx,dx
+	jnz	@@skip
+	push	cx si
+	mov	di,bx
+@@cmp:	mov	al,es:[si]
+	cmp	al,'a'
+	jb	@@chr1
+	cmp	al,'z'
+	ja	@@chr1
+	sub	al,20h
+@@chr1:	mov	ah,[di]
+	cmp	ah,'a'
+	jb	@@chr2
+	cmp	ah,'z'
+	ja	@@chr2
+	sub	ah,20h
+@@chr2:	cmp	al,ah
+	jnz	@@not
+	inc	si
+	inc	di
+	loop	@@cmp
+	pop	si cx
+	stc
+	jmp	@@done
+@@not:	pop	si cx
+@@skip:	add	bx,dx
+	jmp	@@next
+@@no:	clc
+@@done:	pop	di si dx cx bx ax
+	ret
+
+
+set_hdpmi_force:
+	push	ds
+	mov	ax,_seg_kernel
+	mov	ds,ax
+	assume	ds:_KERNEL
+	or	bptr ds:pm32_hdpmi,00000001b
+	assume	ds:_TEXT16
+	pop	ds
+	ret
+
+
 set_dos4gw_config:
 	push	ds
 	mov	ax,_seg_kernel

@@ -61,6 +61,7 @@ _STACK	ends
 extrn	pm32_info	:far
 extrn	pm32_init	:far
 extrn	pm32_data	:byte
+extrn	pm32_hdpmi	:byte
 
 include	TEXT\include.asm
 
@@ -163,6 +164,7 @@ start:	push	cs			; DS = CS
 
 	call	get_default_config	; configure using defaults
 	call	apply_dos4gw_name_config; DOS4GW.EXE replacement defaults
+	call	apply_hdpmi_name_config	; BUILD-engine HDPMI/WC defaults
 	call	get_environ_config	; configure using environment
 	call	copyright		; show copyright message
 	call	check_standalone_exec	; exit unbound/no-arg run in real mode
