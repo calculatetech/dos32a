@@ -1,0 +1,29 @@
+
+#  Makefile for sample USERERR package
+#
+#  Builds a 16-bit .EXP with Microsoft C v6.0
+#  Makefile scripted to use Polymake
+#
+#  Copyright (c) 1996 Tenberry Software, Inc.
+#  All Rights Reserved
+
+all : usererr.exp
+
+MSC6PATH=k:\msc\msc60
+Msc6Env :
+    @%setenv PATH=..\..\bin;$(MSC6PATH)\bin;$(MSC6PATH)\binb;
+    @%setenv INCLUDE=.;..\..\include;$(MSC6PATH)\include;$(MSC6PATH)\src\startup$;
+    @%setenv LIB=..\..\lib;$(MSC6PATH)\lib;
+
+usererr.exp: usererr.obj
+	@%do Msc6Env
+	..\..\bin\glu -auto -code -map -package usererr ..\..\lib\msc60l.lib
+
+usererr.obj: usererr.c
+	@%do Msc6Env
+	cl -c -AL -Zepi -Gs -Oas -W3 usererr.c
+
+# syntax to insert the error message package into a bound DOS/4G app
+#
+#boundapp.exe: ..\..\bin\dos4g.exe app.exe usererr.exp
+#	..\..\bin\4gbind ..\..\bin\dos4g app boundapp -pusererr.exp

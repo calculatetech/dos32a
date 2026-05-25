@@ -138,15 +138,6 @@ _self_name	db 'DOS32A'
 _self_name_ext	db 'DOS32A.EXE'
 _dos4gw_name	db 'DOS4GW'
 _dos4gw_name_ext db 'DOS4GW.EXE'
-_hdpmi_build_names db 2,'RR',6,'RR.EXE'
-	db 2,'RA',6,'RA.EXE'
-	db 6,'RACING',10,'RACING.EXE'
-	db 6,'DUKE3D',10,'DUKE3D.EXE'
-	db 2,'SW',6,'SW.EXE'
-	db 5,'SW_TD',9,'SW_TD.EXE'
-	db 5,'BLOOD',9,'BLOOD.EXE'
-	db 5,'BUILD',9,'BUILD.EXE'
-	db 0
 _standalone_syntax db 'DOS/32A fatal (8001): syntax is DOS32A <execname.xxx>',cr,0
 
 _sel_cs		dw 0		; protected mode selector storage

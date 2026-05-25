@@ -1,0 +1,176 @@
+
+#  Hello world example makefile
+#
+#  Also shows example of exporting DOS4GOPTIONS
+#
+#  Built using MSVC\C++ v4.0 and MASM6.11 or Watcom 10.5 and WASM
+#  Makefile scripted to use Polymake
+#
+#  Copyright (c) 1996 Tenberry Software, Inc.
+#  All Rights Reserved
+
+all : hellom.exe hellomcp.exe hello.exe hellocpp.exe
+
+4GDIR=..\..
+PESTUB=$(4GDIR)\bin\pestub.exe
+WCSTUB=$(4GDIR)\bin\stub.exe
+MSVC4Path=k:\msvc\msvc41
+MASM611Path=k:\masm611
+MSVC4Env :
+  @%setenv PATH=$(MSVC4Path)\BIN;$(MSVC4Path)\BIN\WIN95;$(MASM611Path)\bin;
+  @%setenv INCLUDE=.;$(4GDIR)\INCLUDE;$(MSVC4Path)\INCLUDE;
+  @%setenv LIB=$(4GDIR)\lib;$(MASM611Path)\lib;$(MSVC4Path)\LIB;
+  @%setenv MSDEVDIR=$(MSVC4Path)
+
+Watcom105Path=k:\watcom\wc105
+Watcom105Env :
+  @%setenv PATH=$(Watcom105Path)\binw;$(Watcom105Path)\binnt
+  @%setenv LIB=.;$(Watcom105Path)\lib386\dos;$(Watcom105Path)\lib286\dos;$(Watcom105Path)\lib386;$(Watcom105Path)\lib286;
+  @%setenv INCLUDE=.;$(4GDIR)\include;$(Watcom105Path)\h;
+  @%setenv WATCOM=$(Watcom105Path)
+
+AOPTS = /coff /c
+COPTS = /c /G3 /Z7 /I. /DMSVC40
+LIBS = $(MSVC4Path)\LIB\LIBC.LIB $(4GDIR)\LIB\KERNEL32.LIB
+
+.c.obj :
+	@%do MSVC4Env
+	:cl $(COPTS) $<
+
+.asm.obj :
+    @%do MSVC4Env
+	:ml $(AOPTS) $<
+
+############################################################################
+#
+# Make Microsoft PE HELLO objects and executables
+#
+############################################################################
+
+hellom.exe : hellom.obj $(LIBS) hellom.def
+	@%do MSVC4Env
+	:link <@<
+/DEBUG
+/DEBUGTYPE:CV
+/SUBSYSTEM:CONSOLE
+/INCREMENTAL:NO
+/NOD
+/PDB:NONE
+/OUT:$*.exe
+/MAP:$*.map
+/DEF:$*.def
+/STUB:$(PESTUB)
+$[m, *.obj, $**]
+$[m, *.lib, $**]
+<
+	:$(4GDIR)\bin\pe2dbg $*.exe
+	:$(4GDIR)\bin\w32patch -T $*.exe
+
+hellom.obj : hello.c
+	@%do MSVC4Env
+	:cl $(COPTS) /Fohellom.obj $<
+
+hellom.def: makefile
+   @echo NAME  HELLOM                                    >  hellom.def
+   @echo DESCRIPTION "PE hello World Example Program"    >> hellom.def
+   @echo VERSION 1.0                                     >> hellom.def
+   @echo CODE  PRELOAD MOVEABLE DISCARDABLE              >> hellom.def
+   @echo DATA  PRELOAD SINGLE                            >> hellom.def
+   @echo EXPORTS                                         >> hellom.def
+   @echo       DOS4GOPTIONS                              >> hellom.def
+                                                         
+############################################################################
+#                                                        
+# Make Microsoft PE C++ HELLO objects and executables
+#
+############################################################################
+
+hellomcp.exe : hellomcp.obj $(LIBS) hellomcp.def
+	@%do MSVC4Env
+	:link <@<
+/DEBUG
+/DEBUGTYPE:CV
+/SUBSYSTEM:CONSOLE
+/INCREMENTAL:NO
+/NOD
+/PDB:NONE
+/OUT:$*.exe
+/MAP:$*.map
+/DEF:$*.def
+/STUB:$(PESTUB)
+$[m, *.obj, $**]
+$[m, *.lib, $**]
+<
+   :$(4GDIR)\bin\pe2dbg $*.exe
+	:$(4GDIR)\bin\w32patch -T $*.exe
+
+hellomcp.obj : hello.c
+	@%do MSVC4Env
+	:cl $(COPTS) /Fohellomcp.obj $<
+
+hellomcp.def: makefile
+   @echo NAME  HELLOMCP                                     >  hellomcp.def
+   @echo DESCRIPTION "PE C++ Hello World Example Program"   >> hellomcp.def
+   @echo VERSION 1.0                                        >> hellomcp.def
+   @echo CODE  PRELOAD MOVEABLE DISCARDABLE                 >> hellomcp.def
+   @echo DATA  PRELOAD SINGLE                               >> hellomcp.def
+   @echo EXPORTS                                            >> hellomcp.def
+   @echo         DOS4GOPTIONS                               >> hellomcp.def
+
+############################################################################
+#
+# Make Watcom HELLO objects and executables
+#
+############################################################################
+
+hello.exe: hello.obj hello.rsp
+	@%do Watcom105Env
+	:wlink @hello.rsp
+   :..\..\bin\wc2dbg hello
+
+hello.obj: hello.c 
+	@%do Watcom105Env
+   wcc386 hello /3s /d2
+
+hello.rsp : makefile
+   @echo DEBUG ALL                                                                      > hello.rsp
+   @echo N hello.exe                                    >> hello.rsp
+   @echo file hello.obj                                 >> hello.rsp
+   @echo op stub=$(WCSTUB)				                    >> hello.rsp
+   @echo export DOS4GOPTIONS                            >> hello.rsp
+
+#  When using the register based calling convention, due to the prepending
+#  of an underscore, the last line of the above response file must be 
+#  changed to match the line below or else the DOS4GOPTIONS string will not
+#  be found by DOS/4G. DOS/4G searches only for DOS4GOPTIONS.
+#  @echo export DOS4GOPTIONS=_DOS4GOPTIONS              >> hello.rsp
+
+############################################################################
+#
+# Make Watcom C++ HELLO objects and executables
+#
+############################################################################
+
+hellocpp.exe: hellocpp.obj hellocpp.rsp
+	@%do Watcom105Env
+	:wlink @hellocpp.rsp
+   :..\..\bin\wc2dbg hellocpp
+
+hellocpp.obj: hello.c 
+	@%do Watcom105Env
+   wpp386 hello -Fohellocpp.obj /d2 /3s
+
+# C++ compilation requires that the mangled DOS4GOPTIONS string be aliased 
+# in the export link line so that the DOS/4G options string search mechanism 
+# can work properly.
+
+# Note that for Polymake to echo a single dollar sign ($) two dollar signs
+# must appear in the makefile. Check the resulting hellocpp.rsp file to
+# validate that only a single dollar sign ($) actually appears.
+
+hellocpp.rsp : makefile
+   @echo DEBUG ALL                                 > hellocpp.rsp
+   @echo N hellocpp.exe                            >> hellocpp.rsp
+   @echo file hellocpp.obj                         >> hellocpp.rsp
+   @echo op stub=$(WCSTUB)                         >> hellocpp.rsp
+   @echo export DOS4GOPTIONS=W?DOS4GOPTIONS$$n[]a  >> hellocpp.rsp

@@ -1,0 +1,146 @@
+
+#  Spawning a 4G application example makefile
+#  Built using MSVC\C++ v4.0 and/or Watcom C/C++ version 10.5
+#  Makefile scripted to use Polymake
+#
+#  Copyright (c) 1996 Tenberry Software, Inc.
+#  All Rights Reserved
+
+all : 4grunm.exe 4grunm2.exe 4grun.exe 4grun2.exe
+
+4GDIR=..\..
+PESTUB=$(4GDIR)\bin\pestub.exe
+WCSTUB=$(4GDIR)\bin\stub.exe
+MSVC4Path=k:\msvc\msvc41
+MASM611Path=k:\masm611
+MSVC4Env :
+  @%setenv PATH=$(MSVC4Path)\BIN;$(MSVC4Path)\BIN\WIN95;$(MASM611Path)\bin;
+  @%setenv INCLUDE=.;$(4GDIR)\include;$(MSVC4Path)\INCLUDE;
+  @%setenv LIB=$(4GDIR)\lib;$(MASM611Path)\lib;$(MSVC4Path)\LIB;
+  @%setenv MSDEVDIR=$(MSVC4Path)
+
+Watcom105Path=k:\watcom\wc105
+Watcom105Env :
+  @%setenv PATH=$(Watcom105Path)\binw;$(Watcom105Path)\binnt
+  @%setenv LIB=.;$(Watcom105Path)\lib386\dos;$(Watcom105Path)\lib286\dos;$(Watcom105Path)\lib386;$(Watcom105Path)\lib286;
+  @%setenv INCLUDE=.;$(4GDIR)\include;$(Watcom105Path)\h;
+  @%setenv WATCOM=$(Watcom105Path)
+
+WCFLAGS=/d2 /DWATCOM32
+AOPTS = /coff /c
+COPTS = /c /G3 /Z7 /I. /DMSVC40
+LIBS = $(MSVC4Path)\LIB\LIBC.LIB \
+	$(4GDIR)\LIB\KERNEL32.LIB $(4GDIR)\LIB\PED32API.LIB
+
+.c.obj :
+    @%do MSVC4Env
+	:cl $(COPTS) $<
+
+.asm.obj :
+    @%do MSVC4Env
+	:ml $(AOPTS) $<
+
+############################################################################
+#
+# Make Microsoft PE 4GRUNM & 4GRUNM2 objects and executables
+#
+############################################################################
+
+4grunm.exe: 4grunm.obj 4grunm.def $(LIBS)
+    @%do MSVC4Env
+    :link <@<
+/DEBUG
+/DEBUGTYPE:CV
+/SUBSYSTEM:CONSOLE
+/INCREMENTAL:NO
+/NOD
+/PDB:NONE
+/OUT:$*.exe
+/MAP:$*.map
+/DEF:$*.def
+/STUB:$(PESTUB)
+/HEAP:400000,400000
+$[m, *.obj, $**]
+$[m, *.lib, $**]
+<
+   :$(4GDIR)\bin\pe2dbg $*.exe
+   :$(4GDIR)\bin\w32patch -T $*.exe
+
+4grunm.obj: 4grun.c 
+    @%do MSVC4Env
+	:cl $(COPTS) /Fo4grunm.obj $<
+
+4grunm.def: makefile
+   @echo NAME  4GRUNM                                       >  4grunm.def
+   @echo DESCRIPTION "PE 4GRUNM 4GRUNM.EXE Example Program" >> 4grunm.def
+   @echo VERSION 1.0                                        >> 4grunm.def
+   @echo CODE  PRELOAD MOVEABLE DISCARDABLE                 >> 4grunm.def
+   @echo DATA  PRELOAD SINGLE                               >> 4grunm.def
+
+4grunm2.exe: 4grunm2.def 4grunm2.obj $(LIBS)
+    @%do MSVC4Env
+    :link <@<
+/DEBUG
+/DEBUGTYPE:CV
+/SUBSYSTEM:CONSOLE
+/INCREMENTAL:NO
+/NOD
+/PDB:NONE
+/OUT:$*.exe
+/MAP:$*.map
+/DEF:$*.def
+/STUB:$(PESTUB)
+/HEAP:400000,400000
+$[m, *.obj, $**]
+$[m, *.lib, $**]
+<
+   :$(4GDIR)\bin\pe2dbg $*.exe
+   :$(4GDIR)\bin\w32patch -T $*.exe
+
+4grunm2.obj: 4grun2.c
+    @%do MSVC4Env
+	:cl $(COPTS) /Fo4grunm2.obj $<
+
+4grunm2.def: makefile
+   @echo NAME  4GRUNM2                                         >  4grunm2.def
+   @echo DESCRIPTION "PE 4GRUNM 4GRUNM2.EXE Example Program"   >> 4grunm2.def
+   @echo VERSION 1.0                                           >> 4grunm2.def
+   @echo CODE  PRELOAD MOVEABLE DISCARDABLE                    >> 4grunm2.def
+   @echo DATA  PRELOAD SINGLE                                  >> 4grunm2.def
+
+############################################################################
+#
+# Make Watcom or Metaware 4GRUN & 4GRUN2 objects and executables
+#
+############################################################################
+
+4grun.exe: 4grun.obj 4grun.rsp
+	@%do Watcom105Env
+	:wlink @4grun.rsp
+   :..\..\bin\wc2dbg 4grun
+
+4grun.obj: 4grun.c 
+	@%do Watcom105Env
+   wcc386 4grun $(WCFLAGS)
+
+4grun.rsp: makefile
+   @echo DEBUG ALL                     >  4grun.rsp
+   @echo N 4grun.exe                   >> 4grun.rsp
+   @echo file 4grun.obj                >> 4grun.rsp
+   @echo lib $(4GDIR)\lib\dos32wc.lib  >> 4grun.rsp
+   @echo op stub=$(WCSTUB)             >> 4grun.rsp
+
+4grun2.exe: 4grun2.obj 4grun2.rsp
+	@%do Watcom105Env
+	:wlink @4grun2.rsp
+   :..\..\bin\wc2dbg 4grun2
+
+4grun2.obj: 4grun2.c 
+	@%do Watcom105Env
+   wcc386 4grun2 $(WCFLAGS)
+
+4grun2.rsp: makefile
+   @echo DEBUG ALL                     >  4grun2.rsp
+   @echo N 4grun2.exe                  >> 4grun2.rsp
+   @echo file 4grun2.obj               >> 4grun2.rsp
+   @echo op stub=$(WCSTUB)             >> 4grun2.rsp

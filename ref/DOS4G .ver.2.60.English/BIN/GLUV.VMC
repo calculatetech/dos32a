@@ -1,0 +1,21 @@
+! Sample GLU configuration file
+! This file is NOT equivalent to the internal defaults of VMM
+!
+!   NOTE:  BLANK LINES WILL TERMINATE PROCESSING AND SHOULD NOT
+!	   BE INCLUDED IN THIS FILE.
+!
+maxmem = 16384		Use all of memory
+minmem = 512		Needs at least .5Mb
+maxsel = 0xFFF8		All selectors are available
+!
+virtualsize = 16386	The total virtual address space available (in kbytes).
+swapmin = 128		Start with small swap file
+swapinc = 128		Increment by 128k as it expands
+blocksize = 1024
+deleteswap			Delete swap file on completion.
+cushion = 128		The swap file 'cushion' is 128k
+ems = 0				No EMS memory for swapping
+!
+! Comments may follow configuration elements on a line separated by
+! tabs or spaces
+! Comment lines must begin with ! (exclamation)

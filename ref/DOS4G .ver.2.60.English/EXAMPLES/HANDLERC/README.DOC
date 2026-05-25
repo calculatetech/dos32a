@@ -1,0 +1,76 @@
+Selecting an Interrupt Handling Strategy
+
+    This set of examples illustrates five different ways of handling the
+    same interrupt (0xC or 0xB).  The purpose is to contrast the different
+    methods, and to illustrate the minimum requirements for successfully
+    installing a handler using each method.
+
+    There are a number of generic issues which affect the selection of an 
+    interrupt handling strategy.  In general, during the execution of a
+    protected-mode program, interrupts may be signaled either in protected
+    mode or in real mode.  This is because protected-mode programs spend
+    some time in real mode when using DOS and BIOS services.  Mode switches
+    cost time; for applications such as high-speed communications,
+    minimizing the number of mode switches per interrupt can be a major
+    consideration.  This isn't the case for most applications.  Usually,
+    interrupts should be handled in the same way whether they are signaled
+    in real mode or protected mode, and in this case having a single
+    handler routine which is called in both cases is desireable.
+    Occasionally, interrupts signaled in real mode need to be handled
+    differently than those signaled in protected mode, and in that case
+    separate, or specially configured dual-mode handlers will be needed.
+
+    Interrupt handlers running in protected mode are easy to install and
+    can access extended memory, including the data of the parent protected-
+    mode program.  Interrupt handlers running in real mode are harder to
+    install and invoke: their code and any data structures must be moved to
+    low memory, and any addresses passed to them must be real-mode
+    addresses.  They cannot access extended memory, and it is very
+    difficult for the parent protected-mode program to pass data to them.
+    This is because the DS register will point to the real-mode data
+    segment of whatever real-mode program was active when the interrupt was
+    signaled, not to the protected-mode parent program's data (or even to
+    the interupt handler's own data).
+
+    A final generic issue concerns DPMI.  In DPMI environments, the
+    protected-mode interrupt handler is signaled first, no matter how you
+    install the handlers.  This is a function of the DPMI host; the DOS/4G
+    kernel has no control over this behavior.  As a result, the example
+    programs behave very differently under DPMI than they do in other 
+    environments: only the protected-mode interrupt handler will be
+    signaled under DPMI, and in effect the interrupts will always be
+    passup.  A DPMI host may also seriously interfere with BIOS behavior on
+    which the example programs rely for timing functions, resulting in
+    greatly altered output.  Your TSRs may be similarly affected.
+
+    Detailed descriptions of the advantages and disadvantages of each of
+    the interrupt handling strategies can be found in the comments for the
+    HANDLERC.C source file.  Each of the five examples produce similar
+    output: a row of letters is displayed across the screen by the
+    interrupt handlers in response to interrupts signalled in real mode
+    and/or in protected mode.  If the handler is running in real mode, the
+    letters are red Rs, and if the handler is running in protected mode,
+    they are purple Ps.  For cases where the original interrupt handler for
+    that mode was not replaced, no letter at all is printed.  This allows
+    you to see how each of the five strategies handles each kind of
+    interrupt.
+
+    The example consists of the following files in the EXAMPLES\HANDLERC
+    directory:
+
+    HANDLERC.C    C source file for examples of all five ways of installing
+                  interrupt handlers.
+                  
+    HNDLINT.C     C source file for interrupt handlers and support
+                  functions.
+
+    HNDLINT.ASM   ASM source file for Microsoft interrupt handlers and 
+    					support functions.
+
+    BMRMHAND.ASM  Assembly source file for real-mode and bimodal-same
+                  interrupt handlers.
+                  
+    HANDLERC.H    Include file used in building the example..
+
+    MAKEFILE      Polymake-configured makefile for creating HANDLERC.EXE
+                  using either Microsoft VC 4.x and/or Watcom.

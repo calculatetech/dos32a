@@ -1,0 +1,71 @@
+
+#  Metaware DLL example makefile
+#  Makefile scripted to use Polymake
+#
+#  Copyright (c) 1996 Tenberry Software, Inc.
+#  All Rights Reserved
+
+all: caller.exe mydll.dll mydll.lib calleri.exe
+
+GLUOPTS=-dosseg -format lin -stub $(4GDIR)\bin\stub.exe
+
+4GDIR=..\..\..
+Watcom10Path=k:\watcom\wc10
+MWPATH=k:\highc3.3
+MWENV:
+   %setenv PATH=$(MWPATH)\bin;$(4GDIR)\bin
+   %setenv IPATH=$(4GDIR)\include;$(MWPATH)\inc
+   %setenv LIB=$(4GDIR)\lib;$(MWPATH)\small
+   %setenv TOOLSDIR=$(MWPATH)\bin
+
+mydll.obj: mydll.c 
+   %do MWENV
+   hc386 -c -g -Hdos4g -fsoft mydll.c -o mydll.obj
+
+mydll.dll : mydll.obj 
+   @echo Building mydll.dll
+   %do MWENV
+   glu -CV32 -deffile mydll.def <@<
+$(GLUOPTS) 
+e(mydll.dll)
+m(mydll.map) 
+mydll.obj
+$(4GDIR)\lib\dos32mw.lib 
+hc386.lib
+hcsoft.lib
+<
+	
+mydll.lib: mydll.dll 
+   $(Watcom10Path)\binp\implib mydll.lib mydll.def
+
+caller.exe: caller.obj mydll.dll
+   %do MWENV
+   glu -CV32 <@<
+$(GLUOPTS)
+e(caller.exe)
+m(caller.map) 
+caller.obj
+$(4GDIR)\lib\dos32mw.lib 
+hc386.lib
+hcsoft.lib
+<
+
+caller.obj: caller.c 
+   %do MWENV
+   hc386 -c -g -Hdos4g -fsoft caller.c -o caller.obj
+
+calleri.exe: calleri.obj mydll.dll mydll.lib
+   %do MWENV
+   glu -CV32 -deffile caller.def <@<
+$(GLUOPTS) 
+e(calleri.exe)
+m(calleri.map) 
+calleri.obj
+$(4GDIR)\lib\dos32mw.lib 
+hc386.lib
+hcsoft.lib
+<
+
+calleri.obj:  caller.c 
+   %do MWENV
+   hc386 -c -g -Hdos4g -fsoft -D_USE_IMPLIB_ caller.c -o calleri.obj

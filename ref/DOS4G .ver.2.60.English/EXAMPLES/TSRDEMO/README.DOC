@@ -1,0 +1,79 @@
+TSRs
+
+    A number of issues in the design of Terminate-and-Stay-Resident
+    programs (TSRs) need to be handled differently in protected mode than
+    in real mode.  The total process is complicated enough so that we have
+    created a number of special functions to make developing protected-mode
+    TSRs easier.  All of these are included in the standard DOS/4G API
+    libraries.  These functions are designed to deal with the issues of
+    protected-mode TSR development described for this example.
+    
+    Critical issues for TSRs that require the use of the helper fuctions
+    include:
+
+    Installation: Protected-mode TSRs can be installed in the same way as
+    real-mode TSRs, or they can be installed using D32TsrExit.  Either way,
+    the TSR will remain in extended memory.  Use D32SegMoveLow to move code
+    which will execute in real mode down to low memory during installation.
+    If you install the TSR via the standard DOS or library functions, the
+    parameter which indicates how much of the TSR to preserve on exit will
+    be ignored.  The Tenberry kernel will automatically determines how much
+    memory space your TSR requires.
+
+    Activation: The TSR can be signaled (activated) by means of a software
+    interrupt.  If a protected-mode TSR is signaled through a software
+    interrupt, this raises the usual issues of protected-mode interrupt
+    handling plus one additional major complication: another protected-mode
+    program will not share either the protected-mode Interrupt Vector Table
+    (IDT) or the protected-mode descriptor table (GDT or LDT) with the TSR.
+    This means that both protected-mode and real-mode programs will only be
+    able to signal the TSR through a real-mode interrupt, and will only be
+    able to pass data in low memory (or by using absolute physical
+    addresses).
+    
+    I/O Conflicts: Use D32TsrSavePSP during installation to save the I/O
+    environment needed by the TSR.  Then use D32TsrSwitchPSP during TSR
+    execution to switch from the initial I/O environment to the TSR's I/O
+    environment on entry and back to the initial I/O environment on exit.
+
+    Removal: Removing a TSR from memory (uninstalling it) will cause
+    serious problems unless the interrupt handler chain and/or keyboard
+    handler is restored to its original state (so that you don't try to
+    signal the TSR after it has been removed from memory).  This is more
+    difficult in protected mode, and not possible in some protected-mode
+    environments.  Everything which has been installed has to be removed
+    before the TSR itself can be removed (all keyboard hooks, real-mode
+    callbacks and interrupt vectors); interrupt vectors in particular have
+    to be restored to their original state.  This can't happen if another
+    interrupt handler has been chained to your interrupt handler after the
+    TSR was installed, and it can't happen in certain DPMI environments
+    where the host does not permit real-mode interrupt handlers to be
+    removed.  At present there is no API function to check whether the TSR
+    can be safely uninstalled.  Use D32DPMIRmSetVector to restore the
+    original vectors for any real-mode interrupts hooked by your TSR.  If
+    all these operations succeed, use D32TsrExit to actually remove (and
+    exit from) the TSR.
+
+    This example shows how to write and install a protected-mode Terminate-
+    and-Stay-Resident program, and how to signal that TSR by means of a
+    software interrupt from either real mode or protected mode.
+
+    The example consists of the following files in the EXAMPLES\TSRDEMO
+    directory:
+
+    TSRDEMO.C      The main TSR program.
+    
+    TSFEXECA.ASM   The assembly source for the execution context switcher.
+    
+    TSRDEMOA.ASM   The assembly source for the TSR real-mode interrupt
+                   handler.
+    
+    SIGRM.C        The source for the real-mode signal program.
+    
+    SIGRMA.ASM     The assembly source for the real-mode catcher when the
+                   TSR exits.
+                   
+    SIGPM.C        The source for the protected-mode signal program.
+
+    MAKEFILE       Polymake-configured makefile to build all the example
+                   executables using Microsoft VC 4.x and/or Watcom.

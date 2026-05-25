@@ -1,0 +1,14 @@
+Packing list for DOS/4GW Professional
+
+4gwbind.exe     45799   The bind utility for DOS/4GW Professional
+4gwpro.exe     258964   DOS/4GW Professional (unbound form)
+common.doc      48258   Commonly asked questions about DOS/4GW Professional
+errmsg.doc      15365   List of DOS/4GW Professional error messages
+packing.lst       751   This file
+pminfo32.exe    98084   Protected-mode system diagnostic tool
+read.me          3810   Overview of DOS/4GW Professional
+release.doc      7567   What's new since the last release?
+rminfo.exe      59970   Real-mode system diagnostic tool
+pstub.c          1605   Source code for updated stub
+pstub.exe       11002   Updated stub for DOS/4GW Professional
+updgrade.txt     1878   Upgrade information

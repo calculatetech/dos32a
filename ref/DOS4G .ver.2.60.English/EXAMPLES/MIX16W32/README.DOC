@@ -1,0 +1,26 @@
+Mixing 16 and 32 Bit Code
+
+    This is an example of how to call 16-bit functions and access 16-bit
+    data from 32-bit code.  The example illustrates two different methods
+    of achieving a 16 to 32 interface.  The first method uses function-
+    declared entry points and is, in our opinion preferable to the somewhat
+    cumbersome second method, which uses segment selectors.
+	
+    This example consists of the following files, in the
+    EXAMPLES\MIX16W32 directory:
+
+    PROT.C      32-bit code source.
+    
+    16BIT.ASM   Contains 16-bit data, and 16 bit-function to print 16-bit
+                data.
+                
+    16BIT2.ASM  Contains a 16-bit function which calls interrupt 21/4C and
+                exits.
+                 
+    MAKEFILE    Polymake-configured makefile for creating PROT1.EXE and
+                PROT2.EXE using Watcom. 
+
+    Note! No Microsoft buildable version of the MIX16W32 example is 
+	    provided because Microsoft VC 4.x does not support mixed 16 and 32 
+   	 bit code.
+

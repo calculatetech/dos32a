@@ -14,8 +14,10 @@ DOS Extender (DOS32A.EXE):
   IOPL/VCPI/DPMI detection logic, avoiding Doom-family freezes while preserving
   the normal DPMI detection path.
 
-+ Restored HDPMI32 write-combining behavior for BUILD-engine games by making
-  the early HDPMI32 detection path launch-target specific instead of global.
++ Restored HDPMI32 write-combining behavior for DOS4GW.EXE replacement use
+  without a game-name list. When DOS/32A is launched as DOS4GW.EXE, it tries
+  the HDPMI32 external-DPMI path before the VCPI/XMS fallback; bound id Tech
+  executables remain on the non-forced path.
 
 SUNSYS Bind Utility (SB.EXE):
 -----------------------------

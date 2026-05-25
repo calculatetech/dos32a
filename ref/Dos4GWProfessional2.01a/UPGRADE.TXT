@@ -1,0 +1,43 @@
+
+                      SPECIAL DOS/4G UPGRADE OFFER
+
+Tenberry Software offers all Watcom customers a special upgrade to our
+top-of the line, 32-bit DOS Extender, DOS/4G.
+
+DOS/4G provides you with all of the necessary features and performance you
+need to make powerful 32-bit protected-mode DOS programs. And best of all
+because DOS/4G is a SUPERSET of DOS/4GW Professional, upgrading your program
+to take advantage of DOS/4G's enhanced features is simple and fast.
+
+DOS/4G gives you:
+        - Access to 4GB of memory,
+        - Support for other 32-bit compilers,
+        - Enhanced Virtual Memory performance,
+        - The ability to write protected-mode TSRs,
+        - The ability to create and run Dynamic Link Libraries (DLLs),
+        - Demand Loading,
+        - Complete configurability of the kernel and Virtual Memory Manager,
+        - A real-mode stub (STUB.EXE), that automatically executes DOS/4G
+                when your program's name is entered on the command line,
+        - The ability to load multiple programs on a single copy of
+                the DOS extender,
+        - Support for most DPMI (Interrupt 31h) functions,
+        - A function library, to provide you with greater control of memory
+                management, descriptor management, interrupt handling,
+                program loading, TSR functions and other services through
+                the DOS/4G API,
+        - National Language Support, to allow translation of error messages,
+        - A protected-mode Linker,
+        - A protected-mode Debugger,
+        - And a complete, two volume documentation set.
+
+Contact Tenberry Software today to get more information and special
+upgrade pricing on DOS/4G.
+
+Tenberry Software, Inc.
+220 North Main Street
+Natick, MA 01760
+U.S.A.
+Tel: (508) 653-6006
+FAX: (508) 655-2753
+email: sales@ratsys.com

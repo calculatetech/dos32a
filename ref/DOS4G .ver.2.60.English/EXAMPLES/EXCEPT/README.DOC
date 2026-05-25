@@ -1,0 +1,12 @@
+Handling Exceptions
+
+    This example is a simple demonstration of how to handle exceptions
+    under DOS/4G.  
+
+    The example consists of the following files in the EXAMPLES\EXCEPT
+    directory:
+
+    EXCEPT.C    32-bit code source.
+    
+    MAKEFILE    Polymake-configured makefile for creating EXCEPT.EXE
+                using Microsoft VC 4.x and/or Watcom.

@@ -108,7 +108,7 @@ pm32_info:
 
 	test	pm32_hdpmi,00000001b
 	jz	@@skip_hdpmi_xms
-	call	@@detect_HDPMI		; BUILD targets need HDPMI32 WC
+	call	@@detect_HDPMI		; DOS4GW replacement prefers HDPMI32
 @@skip_hdpmi_xms:
 
 	pushf

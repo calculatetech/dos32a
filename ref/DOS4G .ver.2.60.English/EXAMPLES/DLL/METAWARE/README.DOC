@@ -1,0 +1,22 @@
+Calling a DLL using Metaware
+
+    This example shows how to call a Metaware 32-bit linear executable DLL
+    from a Metaware 32-bit linear executable program.  The example uses the
+    DOS/4G API to load the DLL using either of two methods: an IMPLIB, to
+    cause the DLL to be loaded at program load time, or dynamically, using
+    the DOS/4G D32LoadModule API call.
+     
+    The example consists of the folllowing files in the EXAMPLES\DLL\
+    METAWARE directory:
+    
+    MYDLL.C     C source file for DLL example code.  To be called from
+                CALLER.C
+
+    MYDLL.DEF   Standard DEF file for exporting MYDLL functions
+
+    CALLER.C    C source file for calling DLL functions in MYDLL
+
+    CALLER.DEF  Standard DEF file for importing MYDLL functions
+
+    MAKEFILE    Polymake-configured makefile to build all the example
+                executables using Metware  

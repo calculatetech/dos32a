@@ -1,0 +1,103 @@
+
+#  Exception handling example makefile
+#  Built using Microsoft VC v4.0 and MASM6.11 or Watcom C/C++ version 10.5
+#  Makefile scripted to use Polymake
+#
+#  Copyright (c) 1996 Tenberry Software, Inc.
+#  All Rights Reserved
+
+all : exceptm.exe except.exe
+
+4GDIR=..\..
+PESTUB=$(4GDIR)\bin\pestub.exe
+WCSTUB=$(4GDIR)\bin\stub.exe
+MSVC4Path=k:\msvc\msvc41
+MASM611Path=k:\masm611
+MSVC4Env :
+  @%setenv PATH=$(MSVC4Path)\BIN;$(MSVC4Path)\BIN\WIN95;$(MASM611Path)\bin;
+  @%setenv INCLUDE=.;$(4GDIR)\INCLUDE;$(MSVC4Path)\INCLUDE;
+  @%setenv LIB=$(4GDIR)\lib;$(MASM611Path)\lib;$(MSVC4Path)\LIB;
+  @%setenv MSDEVDIR=$(MSVC4Path)
+
+Watcom105Path=k:\watcom\wc105
+Watcom105Env :
+  @%setenv PATH=$(Watcom105Path)\binw;$(Watcom105Path)\binnt
+  @%setenv LIB=.;$(Watcom105Path)\lib386\dos;$(Watcom105Path)\lib286\dos;$(Watcom105Path)\lib386;$(Watcom105Path)\lib286;
+  @%setenv INCLUDE=.;$(4GDIR)\include;$(Watcom105Path)\h;
+  @%setenv WATCOM=$(Watcom105Path)
+
+WCFLAGS=/d2 /DWATCOM32
+AOPTS = /coff /c
+COPTS = /c /G3 /Z7 /I. /DMSVC40
+LIBS = $(MSVC4Path)\LIB\LIBC.LIB \
+	$(4GDIR)\LIB\KERNEL32.LIB $(4GDIR)\LIB\PED32API.LIB
+
+.c.obj :
+	@%do MSVC4Env
+	:cl $(COPTS) $<
+
+.asm.obj :
+    @%do MSVC4Env
+	:ml $(AOPTS) $<
+
+############################################################################
+#
+# Make Microsoft PE EXCEPTM objects and executables
+#
+############################################################################
+
+exceptm.exe: exceptm.obj excepta.obj $(LIBS) exceptm.def
+    @%do MSVC4Env
+    :link <@<
+/DEBUG
+/DEBUGTYPE:CV
+/SUBSYSTEM:CONSOLE
+/INCREMENTAL:NO
+/NOD
+/PDB:NONE
+/OUT:exceptm.exe
+/MAP:exceptm.map
+/DEF:exceptm.def
+/STUB:$(PESTUB)
+$[m, *.obj, $**]
+$[m, *.lib, $**]
+<
+	:$(4GDIR)\bin\pe2dbg $*.exe
+	:$(4GDIR)\bin\w32patch -T $*.exe
+   
+exceptm.obj: except.c 
+	@%do MSVC4Env
+	:cl $(COPTS) /Foexceptm.obj $<
+
+excepta.obj: except.asm
+    @%do MSVC4Env
+	:ml $(AOPTS) /Foexcepta.obj $<
+
+exceptm.def: makefile
+   @echo NAME  EXCEPTM                                >  exceptm.def
+   @echo DESCRIPTION "PE EXCEPTION Example Program"   >> exceptm.def
+   @echo VERSION 1.0                                  >> exceptm.def
+   @echo CODE  PRELOAD MOVEABLE DISCARDABLE           >> exceptm.def
+   @echo DATA  PRELOAD SINGLE                         >> exceptm.def
+
+############################################################################
+#
+# Make EXCEPT objects and executables
+#
+############################################################################
+
+except.exe: except.obj except.rsp
+	@%do Watcom105Env
+	:wlink @except.rsp
+   :..\..\bin\wc2dbg except
+
+except.obj: except.c 
+	@%do Watcom105Env
+   wcc386 except $(WCFLAGS)
+
+except.rsp: makefile
+   @echo DEBUG ALL                                    >  except.rsp
+   @echo N except.exe                                 >> except.rsp
+   @echo file except.obj                              >> except.rsp
+   @echo lib $(4GDIR)\lib\dos32wc.lib                 >> except.rsp
+   @echo op stub=$(WCSTUB)                            >> except.rsp

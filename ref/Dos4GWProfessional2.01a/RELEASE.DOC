@@ -1,0 +1,173 @@
+
+                  DOS/4GW Professional RELEASE NOTES
+                  ----------------------------------
+
+                       +----------------------+
+                       | Key to release notes |
+                       |                      |
+                       | E -- Enhancement     |
+                       | B -- Bug (fix)       |
+                       | D -- Documentation   |
+                       +----------------------+
+
+Release 2.01a, April 3, 1996 (changes since release 2.01)
+---------------------------------------------------------
+
+B ** The int33 fix below has proven to be unstable and therefor the changes
+	have been backed out.
+   
+Release 2.01, March 8, 1996 (changes since release 2.00)
+---------------------------------------------------------
+
+E ** Configuration error reporting has been enhanced. It now prints a pointer
+     to the location of the error with approximate options string content.
+
+B ** Configuration error numbers (400x) conflicted with GLU error numbers. 
+     These have been changed to 500x.
+
+     Configuration Processing Errors
+     -------------------------------
+     DOS/4G error (5000): cfg syntax error - Invalid value 
+     DOS/4G error (5001): cfg syntax error - Invalid Section
+     DOS/4G error (5002): cfg syntax error - Zero length option string
+     DOS/4G error (5003): cfg syntax error - Invalid option string
+     DOS/4G error (5004): cfg syntax error - Invalid char after option string
+
+B ** The default protected mode int 33 vector installed by DOS/4G
+     had been modified in such a manner as to cause a zero vector to be 
+     installed in protected mode when no real mode mouse driver was detected. 
+     This behavior has now been fixed. If either a zero vector real mode 
+     driver or a RET-only real mode handler is detected by DOS/4G then a
+     RET-only protected mode handler is installed. If a seemingly valid
+     real mode handler is detected then the default protected mode int 33
+     translation handler is installed and any int 33 will be chained to
+     the real mode handler after translation.
+
+B ** Fixed: A low memory int21/3f (Read From File With Handle) failure which 
+     occured under certain conditions. 
+
+B ** Fixed: A bug which caused environment variables as values for 
+     configuration options to fail.
+
+B ** Fixed: A bug which caused the setting of the VMM VMVerbose environment
+     variable to be ignored.
+
+B ** The initial 2.00 4GWBIND was using the wrong EXP header which could 
+     cause an  inability to see some memory or even run a bound 4GWPRO
+     application. This has been fixed for 2.01.
+
+
+
+
+Release 2.00, Nov 20th, 1995 (changes since release 1.97)
+---------------------------------------------------------
+
+D ** A manual is now available for DOS/4GW Professional users. It covers all
+     issues involving protected-mode architecture and development as well as
+     the differences between all of the DOS/4G Family products.  This is a
+     must for any new users of DOS/4GW Professional and a great help even
+     for those who have been using the product for years.
+
+D ** The Kernel option NullPtrCheck still is not supported
+     under an external DPMI host.
+
+E ** The configuration format has been changed for enhanced flexibility and
+     consistency across product flavors.  Most of the options have remained
+     the same though.  Please review chapter 4 of the DOS/4G Family
+     Programmer's Guide for details.
+
+     Note: The new format for configuration options is not backward
+           compatible with the 1.97 version configuration options. You must
+           convert your preexisting options to the new format or they will
+           not work.
+
+E ** Support has been implemented for 32-bit arguments to int 21h functions
+     48h(allocate), 49h(free), and 4Ah(resize).
+
+E ** DPMI 31 800 & 801 calls can now handle mappings greater than 4Meg; up
+     to 64Meg total.
+
+E ** Processing speed for int 21h has been improved.
+
+E ** Processing speed for int 31h under VM has been improved.
+
+E ** PMINFO32 is now built on the same loader that DOS4G.EXE uses.
+
+E ** PMINFO32 has been enhanced to give more accurate results on newer
+     systems.
+
+E ** The kernel's machine identification strategy has been upgraded to better
+     recognize some newer systems.
+
+E ** Some VM changes have been implemented:
+
+     o The swapfile will not grow beyond the SwapMax actual maximum size;
+
+     o Several blatant logical configuration errors now result in the report
+       of a fatal error and DOS/4GW Professional will terminate execution;
+
+E ** The stub program may now be built by the Watcom 16-bit compiler, as well
+     as the Microsoft compiler.
+
+B ** The VMM "DOS/4G error(2511) : swap out error[2]" problem has been fixed.
+
+B ** A failure when there is more than 64MB of RAM present has been fixed.
+
+B ** Memory loss problems with the zero based Linexe loader have been fixed.
+
+B ** Fixed a fast PSP switching problem with some versions of DOS, under VM.
+
+B ** Fixed a problem under VM where the memory report would show that physical
+     pages are greater than the virtual space.
+
+B ** Fixed the mouse32 handler to ignore a Microsoft Windows DOS box bug
+     which mangles the high word of ESP.
+
+B ** Fixed problems relating to the use of '.' as the path specification with
+     Novell networks, (e.g. DOS4G-VM.SWAPNAME=.).
+
+B ** Fixed int31/500 VMM phsical > address space bug which reported largest
+     free lockable > address space.
+
+B ** Fixed a bug which caused EDX and EBX to be swapped after an NMI.
+
+B ** Fixed an accounting bug located in the VM code for handling int 31h/0502h;
+     evidenced by an apparent loss of free pages as reported by int 31h/0500h
+     or D32MemInfo when doing repeated MALLOCs and FREEs under VM.
+
+B ** Fixed an accounting bug in the VM code for handling int 31h/0503h.
+
+B ** Fixed an int21/4A resize bug.
+
+B ** Fixed and enhanced the protected mode critical error handler to only
+     allow valid choices.
+
+B ** Int 31h functions 0702h and 0703h now work correctly under VM.
+
+                      KNOWN BUGS AND LIMITATIONS
+                      --------------------------
+
+                      +------------------------+
+                      | Key to Bugs/Limitations|
+                      |                        |
+                      | A -- API Functions     |
+                      | C -- Configuration     |
+                      | O -- OS/Environment*   |
+                      | M -- Miscellaneous     |
+                      +------------------------+
+
+*See common.doc for more OS/Environment limitations
+
+M ** DPMI function 0009h (Set Descriptor Access Rights) requires that
+     certain bit fields in the access and extended access rights/type bytes
+     passed to this function be set to 0 or 1; in addition, the DPL field
+     must equal the caller's CPL (determined most easily by performing an
+     LAR instruction on the calling program's code segment).  See the DPMI
+     specification.
+
+M ** DPMI function 0102h (Resize DOS Memory Block) fails on requests to
+     increase block size; requests to decrease block size succeed.
+
+M ** DPMI functions 0600h/0601h (Lock/Unlock Linear Region), contrary to the
+     description in the manual, return with the carry flag set when VM is not
+     enabled.

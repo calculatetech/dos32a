@@ -1,0 +1,14 @@
+Building a Protected-Mode Program
+
+    This example shows how to compile and link a simple protected-mode
+    program, and how to export the DOS4GOPTIONS string from both a C and
+    C++ compiled object, regardless of the calling convention used.
+	
+    This example consists of these files, in the EXAMPLES\HELLO directory:
+
+    HELLO.C     32-bit code source.
+
+    MAKEFILE    Polymake-configured makefile to build all the example
+                executables using either Microsoft VC 4.x and/or Watcom.
+
+

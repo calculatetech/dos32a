@@ -1,0 +1,48 @@
+;***************************************************************************
+;*
+;*  dos32lib.mac -- Prototypes and definitions for the DOS4G Function Library
+;*
+;*  Copyright (c) Tenberry Software, Incorporated 1996
+;*  All Rights Reserved
+;*
+;*/
+
+TSF32		struc		; Transfer stack frame layout.
+ts32_prev	dw	?	; Previous TSF pointer.
+ts32_ss 	dw	?
+ts32_ds 	dw	?
+ts32_es 	dw	?
+ts32_fs 	dw	?
+ts32_gs 	dw	?
+ts32_edi	dd	?
+ts32_esi	dd	?
+ts32_ebp	dd	?
+ts32_esp	dd	?
+ts32_ebx	dd	?
+ts32_edx	dd	?
+ts32_ecx	dd	?
+ts32_eax	dd	?
+ts32_id 	dw	?	; Interrupt number ID.
+ts32_code	dd	?	; Place for exception type code.
+ts32_eip	dd	?	; IRETD frame.
+ts32_cs 	dw	?	;      "
+ts32_proc	dw	?	; [used as next-proc handle]
+ts32_eflags	dd	?	;      "
+TSF32		ends
+
+reload_size	equ	(size TSF32 - size ts32_prev - size ts32_ss)
+
+d32regs struc
+rds     dd  ?
+res     dd  ?
+redi    dd  ?
+resi    dd  ?
+rebp    dd  ?
+resp    dd  ?
+rebx    dd  ?
+redx    dd  ?
+recx    dd  ?
+reax    dd  ?
+reflags dd  ?
+d32regs ends
+

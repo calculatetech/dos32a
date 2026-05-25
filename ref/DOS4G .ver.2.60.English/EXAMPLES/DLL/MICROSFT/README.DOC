@@ -1,0 +1,17 @@
+Calling a DLL using Microsft
+
+    This examples shows how to call a Microsoft 32-bit PE DLL from a 
+    Microsoft 32-bit PE program.  The example uses the DOS/4G API to 
+    load the DLL using either of two methods: an IMPLIB, to cause the 
+    DLL to be loaded at program load time, or dynamically, using the 
+    DOS/4G D32LoadModule API call.
+
+    The example consists of the following files in the EXAMPLES\DLL\MICROSFT
+    directory:
+
+    MYDLL.C     C source for DLL example code.
+    
+    CALLER.C    C source file for calling DLL functions in MYDLL.
+
+    MAKEFILE    Polymake-configured makefile to build all the example
+                executables using Watcom.

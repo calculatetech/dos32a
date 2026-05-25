@@ -1,0 +1,116 @@
+ROOT directory
+
+common.doc      11821   Answers to commonly asked questions
+read.me          1254   General information about the release
+release.doc      1871   Detailed release notes
+packing.lst      4420   This file
+
+BIN directory
+
+4gbind.exe      46375   DOS/4G bind utility
+d32.exe        231735   DOS/4G's debugger
+dllstart.obj      140   DLL startup code for Watcom
+dos4g.exe      316116   The DOS/4G extender
+glu.exe        293551   DOS/4G's linker
+gluv.exe       331280   DOS/4G's linker (virtual memory version)
+gluv.vmc          775   Configuration file for GLUV
+makedbg.exe     99844   CodeView information converter
+pminfo32.exe    95076   Protected mode analysis tool
+rminfo.exe      59794   Real mode analysis tool
+stub.c           9919   Source for simple real mode stub program
+stub.exe        10215   Simple real mode stub program
+wc2dbg.exe      91644   Tool to make .DBG file from WLINK'd program
+
+INCLUDE directory
+
+dos32lib.h      12901   DOS/4G API header for use in C modules
+dos32lib.mac      769   DOS/4G API header for use in assembly modules
+dos4g.h          3246   DOS/4G header used by API library
+dosgen.h         3456   DOS/4G header used by API library
+exetype.h         398   DOS/4G header used to find the EXE type in a pm executable
+package.h        2024   DOS/4G header used for packages
+packbind.h       7358   DOS/4G header used by API library
+rsitypes.h       6287   DOS/4G header used to contain common header information
+
+LIB directory
+
+dllinit.asm       226   Simple initializer for DOS/4G API DLLs
+dllstart.asm      775   DLL startup code specific for Watcom
+d32impmw.lib     7680   API import library for MetaWare C programs
+dos32mw.def      1523   Module definition file for MetaWare DLL
+dos32wcs.lib    28160   Static link version of API for Watcom; stack based explicit
+dos32wcr.lib    28160   Static link version of API for Watcom; register based explicit
+dos32mw.dll     19968   Dynamic link version of API for MetaWare
+dos32mw.lib     20992   Static link version of API for MetaWare
+dos32wc.lib     28160   Static link version of API for Watcom; default stack based
+msc60l.lib      41467   DOS/16M library used in error message translation
+
+EXAMPLES\4GRUN directory
+
+4grun.c          2796
+4grun.rsp          97
+4grun2.c          372
+4grun2.rsp         72
+makefile         1073   Polymake specific makefile for building this example
+readme.doc        422   Information about example and files in example directory
+
+EXAMPLES\DLL\METAWARE directory
+
+caller.c         3767
+caller.def         74
+dllmw.c           630
+dllmw.def          77
+makefile         1444   Polymake specific makefile for building this example
+readme.doc        640   Information about example and files in example directory
+
+EXAMPLES\DLL\WATCOM directory
+
+caller.c         3771
+caller.lnk        236
+calleri.lnk       252
+makefile         4280   Polymake specific makefile for building this example
+mydll.c           559
+mydll.def          45
+mydll.lnk         158
+readme.doc       1515   Information about example and files in example directory
+
+EXAMPLES\ERRMSG directory
+
+errfmt.doc       2315   Documentation of error message format strings
+usererr.c        6670   Example of translating error messages
+usererr.mak       413   Makefile for error translation example
+
+EXAMPLES\EXCEPT directory
+
+except.c         2219
+except.rsp         99
+makefile          894   Polymake specific makefile for building this example
+readme.doc        310   Information about example and files in example directory
+
+EXAMPLES\HANDLERC directory
+
+handlerc.c      22281
+handlerc.h       1660
+hndlint.c        9306
+makefile         1352   Polymake specific makefile for building this example
+readme.doc       3887   Information about example and files in example directory
+rmhand.asm       2083
+
+EXAMPLES\HELLO directory
+
+hello.c           260
+hello.rsp          70
+makefile          879   Polymake specific makefile for building this example
+readme.doc        278   Information about example and files in example directory
+
+EXAMPLES\MIX16W32 directory
+
+16bit.asm        1211
+16bit2.asm        423
+makefile         1649   Polymake specific makefile for building this example
+prot.c           1932
+readme.doc        573   Information about example and files in example directory
+
+EXAMPLES\TSR directory
+
+

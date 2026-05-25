@@ -1,0 +1,20 @@
+Spawning Other Applications
+
+    This example shows how to use the DOS/4G API to load and run a DOS/4G
+    application from another DOS/4G application.  The example shows the
+    two different ways a spawned program can be executed using the API.
+    The spawned program is first run using D32RunReturn, so control is
+    returned to the spawner when the spawned program exits.  The program
+    is then run again, using D32Run, and when the spawned program exits,
+    the spawning program will terminate also.
+ 	
+    The example consists of the following files, in the EXAMPLES\4GRUN
+    directory:
+
+    4GRUN.C     32-bit code source for spawning program.
+    
+    4GRUN2.C    32-bit code source for spawned program.
+    
+    MAKEFILE    Polymake-configured makefile to build all the example
+                executables using either Microsoft VC 4.x and/or 
+                Watcom v10.5.

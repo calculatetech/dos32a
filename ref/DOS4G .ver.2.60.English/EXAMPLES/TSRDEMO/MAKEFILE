@@ -1,0 +1,200 @@
+############################################################################
+#
+#  Makefile for DOS/4G TSR demo
+#  Built using MSVC\C++ v4.0 and MASM6.11 or Watcom 10.5 and WASM
+#  Makefile scripted to use Polymake
+#
+#  Copyright (c) 1996 Tenberry Software, Inc.
+#  All Rights Reserved
+#
+############################################################################
+
+############################################################################
+#  Targets
+############################################################################
+
+all : tsrdemom.exe sigpmm.exe tsrdemo.exe sigpm.exe sigrm.exe
+
+############################################################################
+#  Environment Variables
+############################################################################
+
+4GDIR=..\..
+PESTUB=$(4GDIR)\bin\pestub.exe
+WCSTUB=$(4GDIR)\bin\stub.exe
+MSVC4Path=k:\msvc\msvc41
+MASM611Path=k:\masm611
+MSVC4Env :
+  @%setenv PATH=$(MSVC4Path)\BIN;$(MSVC4Path)\BIN\WIN95;$(MASM611Path)\bin;
+  @%setenv INCLUDE=.;$(4GDIR)\include;$(MSVC4Path)\INCLUDE;
+  @%setenv LIB=$(4GDIR)\lib;$(MASM611Path)\lib;$(MSVC4Path)\LIB;
+  @%setenv MSDEVDIR=$(MSVC4Path)
+Watcom105Path=k:\watcom\wc105
+Watcom105Env :
+  @%setenv PATH=$(Watcom105Path)\binw;$(Watcom105Path)\binnt
+  @%setenv LIB=.;$(Watcom105Path)\lib386\dos;$(Watcom105Path)\lib286\dos;$(Watcom105Path)\lib386;$(Watcom105Path)\lib286;
+  @%setenv INCLUDE=.;$(4GDIR)\include;$(Watcom105Path)\h;
+  @%setenv WATCOM=$(Watcom105Path)
+
+AOPTS = /coff /c /DMSVC40 
+COPTS = /c /G3 /Z7 /I. /DMSVC40
+LIBS = $(4GDIR)\LIB\MSLIBC.LIB $(MSVC4Path)\LIB\LIBC.LIB \
+	$(4GDIR)\LIB\KERNEL32.LIB $(4GDIR)\LIB\PED32API.LIB
+
+.c.obj :
+    @%do MSVC4Env
+	:cl $(COPTS) $<
+
+.asm.obj :
+    @%do MSVC4Env
+	:ml $(AOPTS) $<
+
+############################################################################
+#
+# Make Microsoft PE TSRDEMOM and SIGPMM objects and executables
+#
+############################################################################
+
+############################################################################
+#	TSR make script
+############################################################################
+
+tsrdemom.exe : tsrdemom.obj tsfexeam.obj tsrdemam.obj tsrdemom.def $(LIBS)
+    @%do MSVC4Env
+    :link <@<
+/DEBUG
+/DEBUGTYPE:CV
+/SUBSYSTEM:CONSOLE
+/INCREMENTAL:NO
+/NOD
+/PDB:NONE
+/OUT:$*.exe
+/MAP:$*.map
+/DEF:$*.def
+/STUB:$(PESTUB)
+$[m, *.obj, $**]
+$[m, *.lib, $**]
+<
+   :$(4GDIR)\bin\pe2dbg $*.exe
+   :$(4GDIR)\bin\w32patch -T $*.exe
+
+tsrdemom.obj: tsrdemo.c 
+    @%do MSVC4Env
+	:cl $(COPTS) /Fotsrdemom.obj $<
+
+tsfexeam.obj: tsfexeca.asm
+    @%do MSVC4Env
+   :ml $(AOPTS) /Fotsfexeam.obj $<
+
+tsrdemam.obj: tsrdemoa.asm
+    @%do MSVC4Env
+   :ml $(AOPTS) /Fotsrdemam.obj $<
+
+tsrdemom.def: makefile
+   @echo NAME  TSRDEMOM                                      >  tsrdemom.def
+   @echo DESCRIPTION "PE TSRDEMO Example Program"            >> tsrdemom.def
+   @echo VERSION 1.0                                         >> tsrdemom.def
+   @echo CODE  PRELOAD MOVEABLE DISCARDABLE                  >> tsrdemom.def
+   @echo DATA  PRELOAD SINGLE                                >> tsrdemom.def
+
+############################################################################
+#  Protected Mode Signaller Make Script
+############################################################################
+
+sigpmm.exe : sigpmm.obj sigpmm.def $(LIBS)
+    @%do MSVC4Env
+    :link <@<
+/DEBUG
+/DEBUGTYPE:CV
+/SUBSYSTEM:CONSOLE
+/INCREMENTAL:NO
+/NOD
+/PDB:NONE
+/OUT:$*.exe
+/MAP:$*.map
+/DEF:$*.def
+/STUB:$(PESTUB)
+$[m, *.obj, $**]
+$[m, *.lib, $**]
+<
+   :$(4GDIR)\bin\pe2dbg $*.exe
+   :$(4GDIR)\bin\w32patch -T $*.exe
+
+# Use Zp1 switch to pack structures so that the terminate location in 
+# sigpmm's psp will be patched at the proper place. If the Zp1 switch
+# isn't used MSVC4.x will buffer the structure and the callback address
+# to tsrdemom will be entered in the wrong place in sigpmm's psp.
+
+sigpmm.obj : sigpm.c 
+    @%do MSVC4Env
+	:cl $(COPTS) /Zp1 /Fosigpmm.obj $<
+
+sigpmm.def: makefile
+   @echo NAME  SIGPMM                                        >  sigpmm.def
+   @echo DESCRIPTION "PE SIGPMM Example Program"             >> sigpmm.def
+   @echo VERSION 1.0							                      >> sigpmm.def
+   @echo CODE  PRELOAD MOVEABLE DISCARDABLE                  >> sigpmm.def
+   @echo DATA  PRELOAD SINGLE                                >> sigpmm.def
+
+############################################################################
+#
+# Make Watcom or Metaware TSRDEMO, SIGPM, and SIGRM objects and executables
+#
+############################################################################
+
+############################################################################
+#	TSR make script
+############################################################################
+
+tsrdemo.exe : tsrdemo.obj tsfexeca.obj tsrdemoa.obj
+   @%do Watcom105Env
+   $(4GDIR)\bin\glu -format lin -stack 40000 -stub $(WCSTUB) -dbg <@<
+tsrdemo.obj
+tsfexeca.obj
+tsrdemoa.obj
+e(tsrdemo)
+m(tsrdemo)
+$(4GDIR)\lib\dos32wc.lib
+<
+
+tsrdemo.obj : tsrdemo.c 
+   @%do Watcom105Env
+   :wcl386 /s /d2 /c /l=dos4g tsrdemo.c
+
+tsfexeca.obj: tsfexeca.asm
+   @%do Watcom105Env
+	wasm -3p tsfexeca
+
+tsrdemoa.obj: tsrdemoa.asm
+   @%do Watcom105Env
+	wasm -3s tsrdemoa
+
+############################################################################
+#  Protected Mode Signaller Make Script
+############################################################################
+
+sigpm.exe : sigpm.obj
+   @%do Watcom105Env
+   $(4GDIR)\bin\glu -format lin -stack 40000 -stub $(WCSTUB) -dbg <@<
+sigpm.obj
+e(sigpm)
+m(sigpm)
+$(4GDIR)\lib\dos32wc.lib
+<
+
+sigpm.obj : sigpm.c 
+   @%do Watcom105Env
+   :wcl386 /s /d2 /c /l=dos4g sigpm.c
+
+############################################################################
+#  Real Mode Signaller Make Script
+############################################################################
+
+sigrm.exe : sigrm.c sigrma.obj
+   @%do Watcom105Env
+   @%setenv LIB=$(WC)\lib286\dos;$(WC)\lib286;$(WC)\os2lib
+   :wcl /lr /s /d2 sigrm.c sigrma.obj
+
+sigrma.obj: sigrma.asm
+   @%do Watcom105Env
+	wasm -3s sigrma

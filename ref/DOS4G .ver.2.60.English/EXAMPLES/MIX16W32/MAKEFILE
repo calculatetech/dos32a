@@ -1,0 +1,60 @@
+#  Mixed 16bit and 32bit code example makefile
+#  Built using Watcom C\C++ v10.5 and Wasm
+#  Makefile scripted to use Polymake
+#
+#  Copyright (c) 1996 Tenberry Software, Inc.
+#  All Rights Reserved
+
+all: prot1.exe prot2.exe
+
+4GDIR=..\..
+Watcom105Path=k:\watcom\wc105
+Watcom105Env :
+  @%setenv PATH=$(Watcom105Path)\binw;$(Watcom105Path)\binnt
+  @%setenv LIB=.;$(Watcom105Path)\lib386\dos;$(Watcom105Path)\lib286\dos;$(Watcom105Path)\lib386;$(Watcom105Path)\lib286;
+  @%setenv INCLUDE=.;$(4GDIR)\include;$(Watcom105Path)\h;
+  @%setenv WATCOM=$(Watcom105Path)
+
+prot1.exe : prot1.obj 16bit.obj 16bit2.obj
+   @%do Watcom105Env
+   wlink <@<
+debug all
+f prot1.obj
+f 16bit.obj
+f 16bit2.obj
+l $(4GDIR)\lib\dos32wc.lib
+n prot1.exe
+op map=prot1.map
+op stub=$(4GDIR)\bin\stub.exe
+<
+   $(4GDIR)\bin\wc2dbg prot1.exe
+
+prot2.exe : prot2.obj 16bit.obj 16bit2.obj
+   @%do Watcom105Env
+   wlink <@<
+debug all
+f prot2.obj
+f 16bit.obj
+f 16bit2.obj
+l $(4GDIR)\lib\dos32wc.lib
+n prot2.exe
+op map=prot2.map
+op stub=$(4GDIR)\bin\stub.exe
+<
+   $(4GDIR)\bin\wc2dbg prot2.exe
+
+16bit.obj: 16bit.asm
+   @%do Watcom105Env
+   wasm -3s 16bit.asm
+
+16bit2.obj: 16bit2.asm
+   @%do Watcom105Env
+   wasm -3s 16bit2.asm
+
+prot1.obj: prot.c
+   @%do Watcom105Env
+   wcc386 /4s /d2 /foprot1.obj prot.c /DMETHOD1
+
+prot2.obj: prot.c
+   @%do Watcom105Env
+   wcc386 /4s /d2 /foprot2.obj prot.c

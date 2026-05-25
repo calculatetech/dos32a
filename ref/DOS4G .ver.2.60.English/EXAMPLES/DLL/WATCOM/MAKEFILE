@@ -1,0 +1,146 @@
+###########################################################################
+#
+# Makefile for 32-bit DOS/4G DLL example using Watcom 10.5
+#	WLIB from 10.0 due to NT requirement
+#
+# PolyMake Flavor
+#
+# Copyright (c) 1996 Tenberry Software, Inc.
+# All Rights Reserved
+#
+# Builds:
+#  mydll.dll - sample DLL with 3 exposed entry points
+#  mydll.lib - implib constructed import library to allow implicit loading
+#     of mydll.dll at calleri load time
+#  caller.exe  - example of dynamic loading of sample DLL
+#  calleri.exe - example of implicit use of sample DLL
+#
+############################################################################
+
+4GDIR = ..\..\..
+
+CREATESFILES = caller.obj caller.exe caller.map caller.lnk \
+ calleri.obj calleri.exe calleri.map calleri.lnk \
+ mydll.obj mydll.dll mydll.lib mydll.map mydll.lnk
+
+############################################################################
+##  Default target
+############################################################################
+
+all: mydll.dll mydll.lib caller.exe calleri.exe
+
+mydll.obj: mydll.c
+   @echo Compiling $*.c...
+   %do Watcom105Env
+   :wcc386 -3s -s -bd -d2 $*.c
+
+caller.obj:  caller.c
+   @echo Compiling $*.c...
+   %do Watcom105Env
+   :wcc386 -3s -s -zdl -zdp -d2 $*.c
+
+calleri.obj:  caller.c
+   @echo Compiling $*.c...
+   %do Watcom105Env
+   :wcc386 -D_USE_IMPLIB_ -fo=calleri.obj -3s -s -zdl -zdp -d2 caller.c
+
+mydll.dll: mydll.obj mydll.lnk
+   @echo Building mydll.dll
+   %do Watcom105Env
+   :wlink @mydll.lnk
+   :$(4GDIR)\bin\wc2dbg mydll.dll
+
+# If building mydll with the -#r switch enabled, for register based passing,
+# the file dllstrts.obj below would need to be replaced with dllstrtr.obj
+
+mydll.lnk: makefile dllstrts.obj
+   @echo format os2 le dll initglobal     >  mydll.lnk
+   @echo debug all                        >> mydll.lnk
+   @echo name mydll.dll                   >> mydll.lnk
+   @echo file dllstrts.obj   					>> mydll.lnk
+   @echo file mydll.obj                   >> mydll.lnk
+   @echo option map                       >> mydll.lnk
+   @echo option caseexact                 >> mydll.lnk
+   @echo option description 'DLL example' >> mydll.lnk
+   @echo EXPORT __DLLstart_					>> mydll.lnk
+
+# Warning : Do not use a replacement module name which does not exactly
+# match the filename, minus extension, of the dll when using implicit
+# dll loading. If a different module name is used the dll will not be 
+# found by DOS/4G and an error will result. The use of a different 
+# module name when loading dlls explicitly, by using the DOS/4G D32 API
+# dll function D32LoadModule, will be uneffected by a change in the 
+# module name of the dll since it requires the dll's filename in order
+# to load the dll.
+
+mydll.lib: mydll.obj mydll.dll
+   @echo building mydll.lib
+   %do Watcom105Env
+   :del mydll.lib
+   :k:\watcom\wc10\binb\wlib mydll.lib +mydll.dll
+
+############################################################################
+# Dynamic load version
+############################################################################
+
+caller.exe: caller.obj caller.lnk
+   %do Watcom105Env
+   @Echo Building caller.exe
+   :wlink @caller.lnk
+   :$(4GDIR)\bin\wc2dbg caller.exe
+
+############################################################################
+# Implib version
+############################################################################
+
+calleri.exe: calleri.obj calleri.lnk mydll.lib
+   %do Watcom105Env
+   @Echo Building calleri.exe
+   :wlink @calleri.lnk
+   :$(4GDIR)\bin\wc2dbg calleri.exe
+
+# If building with the -#r switch enabled, for register based passing,
+# in the link scripts below clib3s.lib must be replaced with clib3r.lib
+# and dos32wc.lib must be replaced with dos32wcr.lib
+
+caller.lnk: makefile
+   @echo format os2 le                                   >  caller.lnk
+   @echo name caller.exe                                 >> caller.lnk
+   @echo debug all                                       >> caller.lnk
+   @echo file caller.obj                                 >> caller.lnk
+   @echo l $(Watcom105Path)\lib386\dos\clib3s.lib        >> caller.lnk
+   @echo l $(4GDIR)\lib\dos32wc.lib                      >> caller.lnk
+   @echo option verb                                     >> caller.lnk
+   @echo option caseexact                                >> caller.lnk
+   @echo option stub=$(4GDIR)\bin\stub.exe               >> caller.lnk
+   @echo option stack=8192                               >> caller.lnk
+   @echo option map=caller.map                           >> caller.lnk
+
+calleri.lnk: makefile
+   @echo format os2 le                       				>  calleri.lnk
+   @echo name calleri.exe                    				>> calleri.lnk
+   @echo debug all                           				>> calleri.lnk
+   @echo file calleri.obj                    				>> calleri.lnk
+   @echo l $(Watcom105Path)\lib386\dos\clib3s.lib       	>> calleri.lnk
+   @echo l mydll.lib                                     >> calleri.lnk
+   @echo l $(4GDIR)\lib\dos32wc.lib                      >> calleri.lnk
+   @echo option verb                                     >> calleri.lnk
+   @echo option caseexact                                >> calleri.lnk
+   @echo option stub=$(4GDIR)\bin\stub.exe               >> calleri.lnk
+   @echo option stack=8192                               >> calleri.lnk
+   @echo option map=calleri.map                          >> calleri.lnk
+
+Watcom105Path=k:\watcom\wc105
+Watcom105Env :
+  @%setenv PATH=$(Watcom105Path)\binw;$(Watcom105Path)\binnt
+  @%setenv LIB=.;$(Watcom105Path)\lib386\dos;$(Watcom105Path)\lib286\dos;$(Watcom105Path)\lib386;$(Watcom105Path)\lib286;
+  @%setenv INCLUDE=.;$(4GDIR)\include;$(Watcom105Path)\h;
+  @%setenv WATCOM=$(Watcom105Path)
+
+dllstrts.obj : $(4GDIR)\lib\dllstart.asm 
+    @%do Watcom105Env
+    :wasm -3s $(4GDIR)\lib\dllstart.asm /Fodllstrts.obj /DDEBUG
+
+dllstrtr.obj : $(4GDIR)\lib\dllstart.asm
+    @%do Watcom105Env
+    :wasm -3r $(4GDIR)\lib\dllstart.asm /Fodllstrtr.obj /DDEBUG

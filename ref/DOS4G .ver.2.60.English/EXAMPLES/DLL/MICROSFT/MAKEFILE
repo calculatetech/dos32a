@@ -1,0 +1,182 @@
+############################################################################
+#
+# Makefile for 32-bit DOS/4G DLL example using MSVC4.x and MASM6.11
+#
+# PolyMake Flavor
+#
+# Copyright (c) 1996 Tenberry Software, Inc.
+# All Rights Reserved
+#
+# Builds:
+#  mydll.dll - sample DLL with 3 exposed entry points
+#  mydll.lib - implib constructed import library to allow implicit loading
+#     of mydll.dll at calleri load time
+#  caller.exe  - example of dynamic loading of sample DLL
+#  calleri.exe - example of implicit use of sample DLL
+#
+############################################################################
+
+all: mydll.dll caller.exe calleri.exe
+
+4GDIR=..\..\..
+MASMDIR=k:\masm611
+MSVC4Path=k:\msvc\msvc41
+MSVC4Env :
+  @%setenv PATH=$(MSVC4Path)\BIN;$(MSVC4Path)\BIN\WIN95;$(MASMDIR)\bin;
+  @%setenv INCLUDE=.;$(4GDIR)\include;$(MSVC4Path)\INCLUDE;
+  @%setenv LIB=$(4GDIR)\lib;$(MASMDIR)\lib;$(MSVC4Path)\LIB;
+  @%setenv MSDEVDIR=$(MSVC4Path)
+
+PESTUB=$(4GDIR)\bin\pestub.exe
+
+AOPTS = /coff /c
+LIBS = $(MSVC4Path)\LIB\MSVCRT.LIB \
+	$(4GDIR)\LIB\KERNEL32.LIB $(4GDIR)\LIB\PED32API.LIB
+
+.c.obj :
+    @%do MSVC4Env
+	:cl <@<	$<
+/c 
+/G3 
+/I. 
+/Zi 
+/W3 
+/nologo 
+/D_X86_=1 
+/DWINVER=0x400 
+/DWIN32 
+/DNULL=0 
+/D_WIN32 
+/D_MT 
+/D_DLL 
+/DMSVC40 
+<
+
+.asm.obj :
+    @%do MSVC4Env
+	:ml $(AOPTS) $<
+
+############################################################################
+##  Default target
+############################################################################
+
+mydll.dll: mydll.obj mydll.def $(LIBS)
+    @%do MSVC4Env
+    :link <@<
+/DLL
+/DEBUG
+/DEBUGTYPE:CV
+/SUBSYSTEM:CONSOLE,4.0
+/INCREMENTAL:NO
+/ENTRY:_DllMainCRTStartup@12
+/IMPLIB:$*.lib
+/NOD
+/PDB:NONE
+/OUT:$@
+/MAP:$*.map
+/DEF:$[m, *.def, $**]
+$[m, *.obj, $**]
+$[m, *.lib, $**]
+<
+   :$(4GDIR)\bin\pe2dbg $*.dll
+	:$(4GDIR)\bin\w32patch -T $*.dll
+
+mydll.obj: mydll.c
+
+
+mydll.def: makefile
+   @echo LIBRARY     MYDLL                            >   mydll.def
+   @echo DESCRIPTION "Runtime Test PE DLL for DOS/4G"	>>  mydll.def
+   @echo VERSION  2.50											>>  mydll.def
+   @echo CODE  PRELOAD MOVEABLE DISCARDABLE				>>  mydll.def
+   @echo DATA  PRELOAD SINGLE									>>  mydll.def
+   @echo EXPORTS													>>  mydll.def
+   @echo       DllMain											>>  mydll.def
+   @echo       UTLadd                                 >>  mydll.def
+   @echo       UTLmax                                 >>  mydll.def
+   @echo       UTLmin                                 >>  mydll.def
+
+mydll.lib: mydll.dll
+
+############################################################################
+# Dynamic load version
+############################################################################
+
+caller.exe: caller.obj mydll.lib caller.def $(LIBS)
+    @%do MSVC4Env
+    :link <@<
+/DEBUG
+/DEBUGTYPE:CV
+/SUBSYSTEM:CONSOLE,4.0
+/INCREMENTAL:NO
+/ENTRY:mainCRTStartup
+/NOD
+/PDB:NONE
+/OUT:$*.exe
+/MAP:$*.map
+/DEF:$*.def
+/STUB:$(PESTUB)
+$[m, *.obj, $**]
+$[m, *.lib, $**]
+<
+   :$(4GDIR)\bin\pe2dbg $*.exe
+	:$(4GDIR)\bin\w32patch -T $*.exe
+
+caller.obj:  caller.c
+
+caller.def: makefile
+   @echo NAME  CALLER											>   caller.def
+   @echo DESCRIPTION "PE DLL Explicit Calling Program">>  caller.def
+   @echo VERSION 2.50											>>  caller.def
+   @echo CODE  PRELOAD MOVEABLE DISCARDABLE				>>  caller.def
+
+############################################################################
+# Implib version
+############################################################################
+
+calleri.exe: calleri.obj mydll.lib calleri.def $(LIBS)
+    @%do MSVC4Env
+    :link <@<
+/DEBUG
+/DEBUGTYPE:CV
+/SUBSYSTEM:CONSOLE,4.0
+/INCREMENTAL:NO
+/ENTRY:mainCRTStartup
+/NOD
+/PDB:NONE
+/OUT:$*.exe
+/MAP:$*.map
+/DEF:$*.def
+/STUB:$(PESTUB)
+$[m, *.obj, $**]
+$[m, *.lib, $**]
+<
+   :$(4GDIR)\bin\pe2dbg $*.exe
+	:$(4GDIR)\bin\w32patch -T $*.exe
+
+calleri.obj:  caller.c
+    @%do MSVC4Env
+	:cl <@<	$<
+/c 
+/G3 
+/I. 
+/Zi 
+/W3 
+/nologo 
+/D_X86_=1 
+/DWINVER=0x400 
+/DWIN32 
+/DNULL=0 
+/D_WIN32 
+/D_MT 
+/D_DLL 
+/DMSVC40 
+/Focalleri.obj 
+/D_USE_IMPLIB_
+<
+
+calleri.def: makefile
+   @echo NAME  CALLERI											>   calleri.def
+   @echo DESCRIPTION "PE DLL Implicit Calling Program">>  calleri.def
+   @echo VERSION 2.50											>>  calleri.def
+   @echo CODE  PRELOAD MOVEABLE DISCARDABLE				>>  calleri.def

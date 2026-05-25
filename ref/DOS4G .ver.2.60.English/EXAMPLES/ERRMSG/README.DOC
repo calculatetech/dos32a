@@ -1,0 +1,15 @@
+Changing the DOS/4G Error Messages
+
+    This example shows you how to change the wording of, or translate
+    completely, the DOS/4G error messages.  For more information on
+    changing the error messages see Chapter 8 of this manual.
+    
+    The example consists of the following files in the \EXAMPLE\ERRTEXT
+    directory:
+    
+    USERERR.C   Sample program for remapping the DOS/4G error messages.
+    
+    ERRMSG.DOC  Format strings for the error messages.
+    
+    MAKEFILE    Polymake-configured makefile for creating USERERR.EXP
+                using Microsoft C 6.0.

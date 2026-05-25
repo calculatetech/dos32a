@@ -1,0 +1,106 @@
+
+
+Dear Customer,
+
+
+Thank you for purchasing DOS/4GW Professional v2.01. Version numbers are
+synchronized with DOS/4GW and DOS/4G.
+
+Before you read the rest of this file, please copy the serial number
+from your diskette to a convenient location. You will need the serial
+number should you ever need technical support.
+
+We are delighted to announce that this release includes many
+important new features, including complete documentation.
+The new manual describes in detail how to use the feature set of
+DOS/4GW Professional, plus many helpful programming tips.
+
+For additional information about DOS/4GW Professional, see the commonly
+asked questions file, COMMON.DOC.  See the PACKING.LST file for a complete
+directory of the files included on these diskettes.
+
+Upcoming releases of DOS/4GW Professional will have many more features 
+and additional documentation.  Be sure to purchase DOS/4GW Professional
+maintenance if you want to receive updates as soon as they are available.
+
+
+Sincerely,
+
+Miles Bradley
+DOS/4G Release Manager
+Tenberry Software
+
+
+Getting Started
+---------------
+
+To run an existing DOS/4GW application under DOS/4GW Professional,
+you must bind DOS/4GW Professional to the application.  The syntax
+to do this is:
+
+    4GWBIND 4GWPRO.EXE <yourapp.exe> <boundapp.exe>
+
+To run the newly bound program, just type its name.
+
+To disable the DOS/4GW Professional banner in a bound application,
+use the syntax:
+
+    4GWBIND 4GWPRO.EXE <yourapp.exe> <boundapp.exe> -N
+
+You must also decide if you want to use the virtual memory manager
+in your bound application.  If you do nothing, the virtual memory
+manager will be bound into your application but deactivated; just
+as with DOS/4GW, you will be able to turn it on by setting the
+environment variable dos4gvm.  However, you have two alternatives:
+
+  * If your application will never need the virtual memory manager,
+    because it will only be run on machines with sufficient physical
+    memory or under an external DPMI host like Windows 3.1, you can
+    delete it from the bound application and save 50K or so of
+    disk space:
+
+    4GWBIND 4GWPRO.EXE <yourapp.exe> <boundapp.exe> -VMDEL
+
+  * If your application always requires the virtual memory manager,
+    you can turn it on automatically when binding.  (Note that
+    DOS/4GW Professional never provides virtual memory under an
+    external DPMI host, even if you bind with this option.)
+
+    4GWBIND 4GWPRO.EXE <yourapp.exe> <boundapp.exe> -VMON
+
+
+Debugging
+---------
+
+To debug DOS/4GW Professional applications, you should have at least
+at least version 9.5a (that is, version 9.5 with the A-level patches)
+of the WVIDEO debugger and RSI.TRP file.  Please contact WATCOM to
+obtain these files.
+
+You must debug DOS/4GW Professional applications before binding
+them.  If you need to debug a bound application, first extract the
+original application using the command:
+
+    4GWBIND -U <boundapp.exe> <yourapp.exe>
+
+Then set the environment variable 4GWPROPATH to point to the directory
+containing the unbound DOS/4GW Professional executable, e.g.
+
+    set 4gwpropath=c:\watcom\bin
+
+This step is only necessary to ensure that WVIDEO and WD do not search
+the DOS PATH for a DOS extender (in which case it might find DOS4GW
+before it finds 4GWPRO).
+
+Now you can run WVIDEO and WD on your unbound application(s).
+
+
+Stub notes
+----------
+
+If you are using a stub that you have written, perhaps because you
+want it to set the dos4gvm environment variable before starting
+your application, you will need to restructure your program because
+the stub will not be used.  We recommend you move the special
+stub code into a separate program and have that program exec or
+spawn the bound program.

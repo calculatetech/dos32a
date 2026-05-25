@@ -1,0 +1,530 @@
+
+                         DOS/4G RELEASE NOTES
+                         --------------------
+
+                       +----------------------+
+                       | Key to release notes |
+                       |                      |
+                       | E -- Enhancement     |
+                       | B -- Bug (fix)       |
+                       | D -- Documentation   |
+                       +----------------------+
+
+
+Release 2.60, April 25, 1997 (changes since internal release 2.50)
+------------------------------------------------------------------
+
+E ** The upper words of the EBX, EBP, ESI and EDI registers are saved and
+     restored during DOS calls, to prevent badly-behaved protected-mode
+     device drivers (etc.) from crashing Watcom library functions.
+
+E ** The maximum number of allocation handles has been increased from 16K
+     to 64K - 1, increasing the total amount of memory that can be allocated
+     as 1-page blocks to 256 MB (from 64 MB).
+
+E ** Old-style option-setting syntax (obsolete option names, section names
+     and delimiters, options which take no values) will now be accepted as
+     well as current option-setting syntax.
+
+B ** The StartupBanner option now defaults to ON for DOS/4GW and DOS/4GW
+     Professional.  In addition, the option value now prints correctly when
+     PrintConfig is ON.
+
+E ** The CrashVerbose option now defaults to ON for all three products.
+
+E ** DOS/4GW and DOS/4GW Professional have been modified to allow the 
+     debugging options [DOS4G] PrintConfig, SegexeVerbose, LinexeVerbose
+     and Verbose and [DOS4GW] VMVerbose (this last is a bug fix).
+
+B ** WVMM.EXP has been modified so that swap_max can't be larger than 
+     vmVirtSize (the swap table can't be larger than the total memory space),
+     which prevents a GP fault due to trying to search past the end of an
+     internal table.  (This would cause a "deinitializing twice" error).
+
+B ** WVMM.EXP has been modified so that allocation handles are correctly
+     released and re-used, which prevents VMM from exhausting its memory
+     and being unable to allocate any memory at all after a period of time.
+
+B ** The maximum virtual memory size for DOS/4GW Professional has been 
+     increased from 64M to 128M (the documented amount).
+
+E ** The default virtual memory size for DOS/4G has been changed from 16M to
+     the maximum of twice the available physical memory and 16M; enabling 
+     virtual memory on a machine with more than 16M of physical memory will 
+     no longer decrease the amount of memory your program can use by default.
+
+B ** Setting the maximum virtual memory size will now take effect even if you
+     do not change the default swap size; previously, you had to increase the
+     maximum swap size as well as the virtual memory size in order to actually
+     get more memory.
+
+B ** DOS/4G programs built with Microsoft will now load successfully in a
+     Windows NT DOS box.
+
+E ** The system() and spawn() functions are now supported in DOS/4G programs
+     built with Microsoft.
+
+E ** Runtime library functions can now be called from inside DOS/4G DLLs built
+     with Microsoft.
+
+B ** DOS/4G programs built with Microsoft will now load into the D32 debugger
+     in a Windows NT DOS box.  (This is a separate and independent bug fix -
+     a different thing was wrong in the NT DOS box than in the 95 DOS box.)
+
+B ** DOS/4G programs built with Microsoft will now load into the D32 debugger
+     in a Windows 95 DOS box.
+
+B ** DOS/4G programs built with Microsoft now copy the environment correctly
+     when running under straight DOS; formerly the environment was copied
+     incorrectly in a way that sometimes prevented the program from loading
+     successfully and always resulted in corrupt environment information being
+     available to the program.  (Load failures got an "error R6009" message.)
+
+
+
+Release 2.50, , 1996 (changes since release 2.01a)
+---------------------------------------------------------
+
+E ** A PE executable loader and the ability to build DOS/4G extended 
+	applications with the Microsoft Visual C/C++ Version 4.0 and 4.1 
+   compilers has been added to DOS/4G.  Please read the additonal 
+   manual pamphlet which came with your v2.50 release disks for 
+   directions on how to build PE applications.
+   	A number of new files are shipped on the disk to accomadate the
+   new MSVC4.x support:
+   		PED32API.DLL : PE DLL of D32 API.
+         PED32API.LIB : Import library for PED32API.DLL.
+         KERNEL32.DLL : Replacement KERNEL32.DLL.
+         PE2DBG.EXE	 : Creates DBG and DBL files for PE executables.
+         W32PATCH.EXE : Signature byte modifyer; PE<->PX, NE<->DX. Used
+         					to allow our loader to get control under Win95 
+                        and NT when running unbound applications.
+         PESTUB.EXE   : PE specific stub built with MSC8.0.
+      The examples have all been updated to be buildable with MSVC4.x.
+         
+B ** F7 and F9 now work correctly when running D32 in a Windows95 DOS box.
+
+Release 2.01a, April 3, 1996 (changes since release 2.01)
+---------------------------------------------------------
+
+B ** The int33 fix below has proven to be unstable and therefor the changes
+	have been backed out.
+   
+
+Release 2.01, Feb 23rd, 1996 (changes since release 2.01)
+--------------------------------------------------------
+
+D ** It was not noted in the 2.00 release.doc that the return value for 
+     D32DosMemAlloc changed from 1.97 to 2.00. The returned value is now
+     a low memory paragraph segment and not a linear address.
+
+D ** There are two errors in the DOS/4G Family Programmer's Guide, page G4-13.
+     There can be no embedded new line (\n) characters in an option string,
+     and the colon after SwapFileName must be an equal sign.
+     The example should read:
+      char DOS4GOPTIONS[]=
+           "dos4gvm=VirtualMemory:ON,"
+           "SwapFileName=%SWAPFILENAME%\n";
+
+E ** Fixed: D32 can now debug DOS/4G applications in a Windows 95 DOS box.
+     There is a Windows 95 bug which prevented exception 1 trapping for 
+     which we have implemented a solution.
+     
+E ** Configuration error reporting has been enhanced. It now prints a pointer
+     to the location of the error with approximate options string content.
+
+E ** All relevant examples are now built with Watcom 10.5.
+
+E ** The D32 API was still using the old form (pre-Watcom 10.5) cdecl. This 
+     allowed EBX to possibly be trashed during a cdecl function call when 
+     using Watcom 10.5. The cdecl decleration in DOS32LIB.H has been 
+     modified to default to the new form.
+     
+E ** The Watcom specific D32 API is built with Watcom 10.5 now.
+
+B ** Fixed: A bug in our DPMI INT 31h/0800h caused mappings of 4MB or greater
+     to be misaligned.
+     
+B ** Comment and blank lines in .ini files were causing problems as were 
+     some other .ini formats. Generally an erronious error 4004 was occuring. 
+     .INI file processing has been improved to fix these problems.
+                     
+B ** Configuration error numbers (400x) conflicted with GLU error numbers. 
+     These have been changed to 500x.
+
+     Configuration Processing Errors
+     -------------------------------
+     DOS/4G error (5000): cfg syntax error - Invalid value 
+     DOS/4G error (5001): cfg syntax error - Invalid Section
+     DOS/4G error (5002): cfg syntax error - Zero length option string
+     DOS/4G error (5003): cfg syntax error - Invalid option string
+     DOS/4G error (5004): cfg syntax error - Invalid char after option string
+
+B ** The default protected mode int 33 vector installed by DOS/4G
+     had been modified in such a manner as to cause a zero vector to be 
+     installed in protected mode when no real mode mouse driver was detected. 
+     This behavior has now been fixed. If either a zero vector real mode 
+     driver or a RET-only real mode handler is detected by DOS/4G then a
+     RET-only protected mode handler is installed. If a seemingly valid
+     real mode handler is detected then the default protected mode int 33
+     translation handler is installed and any int 33 will be chained to
+     the real mode handler after translation.
+
+B ** Fixed: When the DOS/4G NullPtrCheck option was turned ON during explicit
+     loading of DLLs using D32LoadModule, it resulted in an erroneous
+     exception 1 trap inside the linexe loader.
+
+B ** Fixed: A low memory int21/3f (Read From File With Handle) failure which 
+     occured under certain conditions. 
+
+B ** Fixed: A bug which caused environment variables as values for 
+     configuration options to fail.
+
+B ** Fixed: Several blank lines followed by a ^Z in an .INI file was
+     causing the configuration processor to fail. 
+
+B ** Fixed: D32LoadModule was expecting D32DosMemAlloc to return a
+     linear address instead of a low memory paragraph segment.
+
+B ** Fixed: DLL entry point resolution now does checking of already loaded 
+     modules' modulenames to try and find a match before looking for a 
+     matching module file name. Previously, resolution of entry points was
+     being done solely by file name and already loaded modules with matching
+     module names were being ignored.
+
+Release 2.00, Nov 20th, 1995 (changes since release 1.97)
+---------------------------------------------------------
+
+D ** The manual has been dramatically enhanced since version 1.97. There
+     are now two manuals (The DOS/4G Family Programmer's Guide and The
+     DOS/4G User's Manual) and overall size has increased by about 50
+     percent. A brief list of the more important changes and corrections
+     follows:
+
+      * Detailed instructions on how to compile, link and debug a
+        DOS/4G application with specific compilers have been enhanced.
+
+      * An additional section describing in detail how to build DLLs
+        with specific compilers has been included.
+
+      * Corrections to using the embedded option settings, as well as
+        specific examples on how to use these options, have been added.
+
+      * Some of the Library Functions have been corrected and updated.
+        Several new functions have also been documented.
+
+      * Many new chapters have been added to provide as much information
+        on protected-mode programming for the DOS/4G family as possible.
+
+D ** The Kernel option NullPtrCheck still is not supported under an
+     external DPMI host.
+
+E ** Configuration has been enhanced for flexibility and consistency
+     across the DOS/4G Family of products. Most of the options have
+     remained the same.  Please review chapter 4 of the the DOS/4G Family
+     Programmer's Guide for details.
+     Note: The new format for configuration options is not backwards
+     compatible with the 1.97 version configuration options. You must
+     convert your preexisting options to the new format or they will
+     not work.
+
+E ** D32 now supports structures!  However, there are some limitations.
+     You cannot get structure information if you use GLU as your linker.
+     At this time, this option is only available to programs compiled and
+     linked with Watcom's compiler and linker. Refer to the D32 chapters
+     in the documentation for more details.
+
+E ** We now supply a DLL startup object file for Watcom users.  The files
+     DLLSTRTS.OBJ [stack-based] and DLLSTRTR.OBJ [register-based] are in
+     \dos4g\bin.  Refer to the new documentation in Chapter 3 of the DOS/4G
+     Family Programmer's Guide for more information.
+
+E ** The D32 API has been logically broken down from one object module into
+     many smaller modules to allow smaller linkage if using only a limited
+     subset of the D32 API functions.
+
+E ** There are several new API functions, which are listed below.  See
+     Chapter 1 in the DOS/4G User's Manual for more information.
+
+      D32CreateSegAlias
+      D32DPMIRmGetVector
+      D32DPMIRmSetVector
+      D32DPMIPmGetVector
+      D32DPMIPmSetVector
+      D32LinearToReal
+      D32MemStrategy
+      D32NamedDescAlloc
+      D32PreparePSP
+      D32QueryModuleFilename
+      D32QueryModuleHandle
+      D32QueryModuleName
+      D32QueryModuleUsage
+      D32QueryProcAddr
+      D32RealToLinear
+      D32SegMoveLow
+      D32TsrExit
+      D32TsrSaveIOState
+      D32TsrSetIOState
+      D32TsrSwitchIOState
+
+E ** You can now load extended segmented executables and DLL's [NE format]
+     with DOS/4G.
+
+E ** Support has been implemented for 32-bit arguments to int 21h functions
+     48h(allocate), 49h(free), and 4Ah(resize).
+
+E ** WC2DBG can now handle significantly larger executables.
+
+E ** DPMI int 31h 0800h & 0801h physical address mapping calls can now handle
+     mappings up to 64MB.
+
+E ** A register-based version of the D32 API library for Watcom, DOS32WCR.LIB,
+     is now provided along with the default stack-based library, DOS32WC.LIB.
+
+E ** Examples are now provided in the EXAMPLES subdirectory.
+
+E ** Stack checking has been turned off for all D32 API Libraries for greater
+     flexibility.
+
+E ** D32LoadModule now accepts paths with UNIX-style forward slashes.
+
+E ** Processing speed for int 21h has been improved.
+
+E ** Processing speed for int 31h under VM has been improved.
+
+E ** PMINFO32 is now built on the same loader that DOS4G.EXE uses.
+
+E ** PMINFO32 has been enhanced to give more accurate results on newer
+     systems.
+
+E ** The kernel's machine identification strategy has been upgraded to better
+     recognize some newer systems.
+
+E ** The information displayed when the PRINTCONFIG option is enabled has
+     been enhanced.
+
+E ** Some VM changes have been implemented:
+
+     o The swapfile will not grow beyond the SwapMax actual max reported in
+       the VM options section if PRINTCONFIG is enabled;
+
+     o Several blatant logical configuration errors now result in the report
+       of a fatal error and DOS/4G will terminate execution;
+
+     o If the actual physical memory available to VM is greater than the
+       PhysNoVM option, a printout of relevant options will occur if the
+       PRINTCONFIG option is enabled.
+
+E ** The stub program may now be built by the Watcom 16-bit compiler, as well
+     as the Microsoft compiler.
+
+B ** A problem which caused "DOS/4G error(2511) : swap out error[2]" has been
+     fixed.
+
+B ** A failure when there is more than 64MB of RAM present has been fixed.
+
+B ** A problem using INT 21h/67h (grow handles) in the Linexe loader that
+     caused access to DLLs to fail under VM has been fixed.
+
+B ** You can now unload a second instance of a DLL without causing the DLL to
+     completely unload.
+
+B ** There was a problem with the environment variables LIBPATH and LIBPATH32.
+     If you had a '..\' at the begining of your DLL path, the search failed.
+     This has been fixed.
+
+B ** Using an Environment Variable with the [dos4g-global] section in a .INI
+     file was broken.  This has been fixed.
+
+B ** DOS/4G extended TSRs under 4DOS are now fully supported.
+
+B ** Memory loss problems with the zero-based Linexe loader have been fixed.
+
+B ** Non-linexe symbols are now relocated in the debugger without crashing.
+
+B ** You can now load an exactly-64k segment from a segmented executable file.
+
+B ** A segmented executable .DLL initialization function calling problem has
+     been fixed. It now initializes correctly.
+
+B ** Fixed a fast PSP switching problem with some versions of DOS, under VM.
+
+B ** Fixed a problem under VM where the memory report would show that physical
+     pages are greater than the virtual space.
+
+B ** Fixed the mouse32 handler to ignore a Microsoft Windows DOS box bug
+     which mangles the high word of ESP.
+
+B ** Fixed a problem which prevented the DOS4GOPTIONS string from being
+     found in an executable with a large number of exports plus imports.
+
+B ** Fixed problems relating to the use of '.' as the path specification with
+     Novell networks, (e.g. DOS4G-VM.SWAPNAME=.).
+
+B ** Fixed a bug in D32ExtAvail which could have resulted in a garbage return
+     value (MEMINFO structure would still be updated correctly though).
+
+B ** Fixed a bug which caused EDX and EBX to be swapped after an NMI.
+
+B ** Fixed a linexe loader bug which caused a GPF if trying to use
+     D32LoadModule to load a Metaware DLL.
+
+B ** Fixed an accounting bug located in the VM code for handling int 31h/0502h;
+     evidenced by an apparent loss of free pages as reported by int 31h/0500h
+     or D32MemInfo when doing repeated MALLOCs and FREEs under VM.
+
+B ** Fixed an accounting bug in the VM code for handling int 31h/0503h.
+
+B ** Fixed an int 21h/4Ah resize bug.
+
+B ** Fixed and enhanced the protected mode critical error handler to only
+     allow valid choices.
+
+B ** The 4GRUN example has been changed to reflect the fact that the three
+     open("con"... statments are only necessary under the Metaware compiler.
+
+B ** A VM accounting bug which occured when spawning has been fixed.
+
+B ** Int 31h functions 050Ah, 0702h, and 0703h now work correctly under VM.
+
+
+                      KNOWN BUGS AND LIMITATIONS
+                      --------------------------
+
+                      +------------------------+
+                      | Key to Bugs/Limitations|
+                      |                        |
+                      | A -- API Functions     |
+                      | C -- Configuration     |
+                      | O -- OS/Environment*   |
+                      | M -- Miscellaneous     |
+                      +------------------------+
+
+*See common.doc for more OS/Environment limitations
+
+A ** D32NamedDescAlloc observes the restrictions of DPMI function 000Dh, which
+     it invokes.  Thus, it is available only under an external DPMI host.  When
+     available, it may be used only with the lowest 16 selectors (range
+     04h-7ch).  Protected-mode TSRs should not use this function.
+
+A ** D32RelocateAddress and D32UnrelocateAddress are incompletely described
+     in the DOS/4G User's Manual.  The first argument to each function is the
+     address of a 16:32 far pointer.  For D32RelocateAddress, the argument is
+     the address of a link map address; the function returns in the same
+     variable the corresponding run-time address.  For D32UnrelocateAddress,
+     the argument is the address of a run-time address; the function returns
+     in the same variable the corresponding link map address.  Example:
+
+     FarPtr32 fp32;
+     // pass run-time address
+     fp32.sel = getcs();
+     fp32.off = some_func;
+     if (!D32UnrelocateAddress(&fp32,hdl))
+      ... error ...
+     else
+      // success, returns with link map address in fp32
+          if (!D32RelocateAddress(&fp32,hdl))
+            ... error ...
+          else
+            // success, returns with run-time address in fp32
+
+A ** D32TsrSwitchPSP and D32TsrSetPSP correctly reset the PSP real-mode
+     segment.  DOS function 51h (Get PSP Segment) will reflect this change.
+     However, it should be noted     that in the DOS/4G implementation of DOS
+     function 62h (Get PSP Address), contrary to the statement in the manual,
+     the PSP real mode segment returned by DOS is converted to a protected
+     mode selector; furthermore, the protected-mode PSP selector returned by
+     DOS function 62h will not change after a call to D32TsrSwitchPSP or
+     D32TsrSetPSP.
+
+A ** The D32 API header file DOS32LIB.H presently uses the pre 10.5 Watcom
+     definition of cdecl which does not preserve the EBX register during
+     function calls. If you are using Watcom 10.5 please read Getting Started
+     (ch-9) issue #8 of the Watcom documentation for a desciption of how
+     to modify the cdecl pragma in DOS32LIB.H for 10.5 Watcom compatibility.
+     Also be aware that the D32 API libraries for Watcom are built with the
+     pre 10.5 version cdecl format and therefore any calls to the functions
+     in these libraries will not preserve EBX either.
+
+C ** When the embedded options method of DOS/4G configuration is used in con-
+     junction with Watcom register-based argument passing conventions (default
+     method, or explicitly selected by a /3r, /4r, or /5r compiler option),
+     the compiler prefixes an underscore to the exported text string name
+     DOS4GOPTIONS.  Therefore in this case, since DOS/4G searches only for
+     DOS4GOPTIONS, the EXPORT statement for the link script (either WLINK or
+     GLU) must be
+          export DOS4GOPTIONS=_DOS4GOPTIONS
+     In all other cases, the statement is simply
+          export DOS4GOPTIONS
+     See EXAMPLES\HELLO\MAKEFILE for an illustration of this.
+
+C ** The configuration option GDTSize does not actually affect the size of
+     the GDT itself.  It modifies internal values used by the DOS/4G
+     implementation of DOS allocation functions to determine the maximum
+     number of selectors that may be allocated.
+
+C ** Multiple semicolon-separated paths may be specified for DLLPATH or
+     DLL32PATH, following the DOS PATH method.  They are searched in the order
+     in which they occur in the configuration path option.  Example:
+          DLLPATH=c:\dll;d:\myapp;e:\misc_dll
+     In this example, the specifed subdirectories on drives c:, d:, and e:
+     will be searched in sequence until the required DLL is located.
+
+C ** Syntactic errors in configuration switches, as well as contradictory
+     settings (such as PHYSMIN > PHYSMAX), will cause execution of DOS/4G to
+     terminate with an error message. A number of new errors have been added
+     since the manual was printed for reporting these types of errors. A list
+     of these new errors follows:
+
+     Configuration Processing Errors
+     -------------------------------
+     DOS/4G error (4000): configuration syntax error
+          Section %s Option %s Value %s
+     DOS/4G error (4001): configuration syntax error
+         invalid section name                      Section %s
+     DOS/4G error (4002): configuration syntax error
+         zero length option string found           Section %s
+     DOS/4G error (4003): configuration syntax error
+         invalid option string found               Section %s Option %s
+     DOS/4G error (4004): configuration syntax error
+         option string not followed by '=' or ':'  Section %s Option %s Char %s
+
+     Note: The configuration error numbers conflict with the GLU error
+     numbers. The conflict was noticed too late for modification for this
+     release but will be fixed in a future release. (Updated for 2.01 see 
+     above)
+
+     VM Processing Errors
+     ---------------------
+     DOS/4G error (2535): not enough physical memory (PhysLeave(%ldK) >
+         Physical Available(%ldK))
+     DOS/4G error (2536): logical error (PhysMin(%ldK) > PhysMax(%ldK))
+     DOS/4G error (2537): logical error (SwapMin(%ldK) > SwapMax(%ldK))
+
+C ** The configuration options PHYSMIN, PHYSLEAVE, SWAPMIN, and SWAPLEAVE
+     are handled by DOS/4G as unmodifiable user requirements, whereas PHYSMAX
+     and SWAPMAX represent upper limits that will not necessarily be reached
+     during a given execution, but will in any case never be exceeded.
+
+C ** There is a bug in the configuration manager which results in an
+     erronious configuration error 4004 when a comment line is included
+     inside of a either a [dos4g] or [dos4gvm] section in an ini file.
+     The solution is not to use comments inside of these sections in
+     your .ini file(s).
+
+O ** DOS/4G v2.0 provides full NetBIOS support, with the exception of nowait
+     NetBIOS interrupts.
+
+M ** DPMI function 0009h (Set Descriptor Access Rights) requires that
+     certain bit fields in the access and extended access rights/type bytes
+     passed to this function be set to 0 or 1; in addition, the DPL field
+     must equal the caller's CPL (determined most easily by performing an
+     LAR instruction on the calling program's code segment).  See the DPMI
+     specification.
+
+M ** DPMI function 0102h (Resize DOS Memory Block) fails on requests to
+     increase block size; requests to decrease block size succeed.
+
+M ** DPMI functions 0600h/0601h (Lock/Unlock Linear Region), contrary to the
+     description in the manual, return with the carry flag set when VM is not
+     enabled.
