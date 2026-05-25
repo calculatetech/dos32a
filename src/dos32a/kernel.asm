@@ -69,7 +69,6 @@ INCLUDE	TEXT\include.asm
 PUBLIC	pm32_info
 PUBLIC	pm32_init
 PUBLIC	pm32_data
-PUBLIC	pm32_hdpmi
 PUBLIC	@kernel_beg
 PUBLIC	@kernel_end
 
@@ -96,7 +95,6 @@ pm32_pmstacks	db	-1	; protected mode stack nesting
 pm32_rmstacklen	dw	-1	; real mode stack length, in para
 pm32_pmstacklen	dw	-1	; protected mode stack length, in para
 pm32_maxextmem	dd	-1	; maximum extended memory to allocate
-pm32_hdpmi	db	0	; bit0: DOS4GW.EXE replacement prefers HDPMI32
 
 
 

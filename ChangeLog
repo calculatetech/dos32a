@@ -9,15 +9,16 @@ DOS/32 Advanced DOS Extender, version 26.1
 
 DOS Extender (DOS32A.EXE):
 --------------------------
-+ Fixed an id Tech compatibility regression when HDPMI32 is loaded. DOS/32A no
-  longer forces the HDPMI32-specific external DPMI path before the normal
-  IOPL/VCPI/DPMI detection logic, avoiding Doom-family freezes while preserving
-  the normal DPMI detection path.
++ Repaired the `/DPMITST:ON` environment switch so it selects DPMI-before-VCPI
+  detection as documented in the user manual.
 
-+ Restored HDPMI32 write-combining behavior for DOS4GW.EXE replacement use
-  without a game-name list. When DOS/32A is launched as DOS4GW.EXE, it tries
-  the HDPMI32 external-DPMI path before the VCPI/XMS fallback; bound id Tech
-  executables remain on the non-forced path.
++ Removed the DOS4GW.EXE-name HDPMI32 shortcut and restored normal DPMI/VCPI
+  probing after XMS detection, so bound and external launch modes use the same
+  host-selection rules.
+
++ Limited external-DPMI exception handler installation to the historical DOS/32A
+  set of exceptions 00h, 06h, 0Dh, and 0Eh instead of taking over every vector
+  from 00h through 0Eh.
 
 SUNSYS Bind Utility (SB.EXE):
 -----------------------------

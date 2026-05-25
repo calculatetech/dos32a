@@ -131,20 +131,6 @@ apply_dos4gw_name_config:
 	ret
 
 
-;=============================================================================
-; Prefer HDPMI32 when DOS/32A is launched as a DOS4GW.EXE replacement.
-;
-set_hdpmi_force:
-	push	ds
-	mov	ax,_seg_kernel
-	mov	ds,ax
-	assume	ds:_KERNEL
-	or	bptr ds:pm32_hdpmi,00000001b
-	assume	ds:_TEXT16
-	pop	ds
-	ret
-
-
 set_dos4gw_config:
 	push	ds
 	mov	ax,_seg_kernel
@@ -163,7 +149,6 @@ set_dos4gw_config:
 	pop	ds
 	mov	wptr _misc_byte,0D34h
 	mov	wptr _lowmembuf,0100h
-	call	set_hdpmi_force
 	ret
 
 ;=============================================================================
@@ -558,7 +543,32 @@ install_client_ints:
 	int	31h
 	jc	@@err
 
+	cmp	cs:_sys_type,3
+	jnz	@@all_excs
 
+	mov	ax,0203h
+
+	mov	bl,00h
+	mov	dx,offs eh00
+	int	31h
+	jc	@@err
+
+	mov	bl,06h
+	mov	dx,offs eh06
+	int	31h
+	jc	@@err
+
+	mov	bl,0Dh
+	mov	dx,offs eh0D
+	int	31h
+	jc	@@err
+
+	mov	bl,0Eh
+	mov	dx,offs eh0E
+	int	31h
+	jmp	@@ok
+
+@@all_excs:
 	mov	ax,0203h
 
 	mov	bl,00h
@@ -635,6 +645,7 @@ install_client_ints:
 	mov	dx,offs eh0E
 	int	31h
 
+@@ok:
 	clc
 @@err:	ret
 
@@ -663,6 +674,9 @@ uninstall_client_ints:
 	mov	edx,dptr cs:_int33_ip
 	int	31h
 
+	cmp	cs:_sys_type,3
+	jz	@@dpmi_excs
+
 	mov	ax,0203h			; restore default PM exception handlers
 	xor	ebx,ebx
 @@0:	mov	cx,wptr cs:_exc_tab[ebx*8+4]
@@ -671,7 +685,32 @@ uninstall_client_ints:
 	inc	bl
 	cmp	bl,15
 	jb	@@0
+	jmp	@@ok
 
+@@dpmi_excs:
+	mov	ax,0203h			; restore historical external-DPMI handlers
+
+	mov	bl,00h
+	mov	cx,wptr cs:_exc_tab[00h*8+4]
+	mov	edx,dptr cs:_exc_tab[00h*8+0]
+	int	31h
+
+	mov	bl,06h
+	mov	cx,wptr cs:_exc_tab[06h*8+4]
+	mov	edx,dptr cs:_exc_tab[06h*8+0]
+	int	31h
+
+	mov	bl,0Dh
+	mov	cx,wptr cs:_exc_tab[0Dh*8+4]
+	mov	edx,dptr cs:_exc_tab[0Dh*8+0]
+	int	31h
+
+	mov	bl,0Eh
+	mov	cx,wptr cs:_exc_tab[0Eh*8+4]
+	mov	edx,dptr cs:_exc_tab[0Eh*8+0]
+	int	31h
+
+@@ok:
 	clc
 @@done:	ret
 

@@ -61,7 +61,6 @@ _STACK	ends
 extrn	pm32_info	:far
 extrn	pm32_init	:far
 extrn	pm32_data	:byte
-extrn	pm32_hdpmi	:byte
 
 include	TEXT\include.asm
 
