@@ -85,7 +85,7 @@ pm32_mode	db	-1	; mode bits:
 				;  bit4: 0=trap software INTs off, 1=on
 				;  bit5: 0=check ext blocks off, 1=on
 				;  bit6: 0=invalid limit check off, 1=on
-				;  bit7: reserved
+				;  bit7: 0=advertise DOS/4G API, 1=ignore
 pm32_maxpages	db	-1	; maximum number of VCPI page tables
 pm32_maxfpages	db	-1	; max. of physical mem. map pages
 pm32_callbacks	db	-1	; number of real mode callbacks

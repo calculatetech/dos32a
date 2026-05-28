@@ -3,22 +3,26 @@
 			*****************************************
 
 
-[Unreleased]
-DOS/32 Advanced DOS Extender, version 26.1
-==========================================
+[2026-05-27]
+DOS/32 Advanced DOS Extender, version 26.1.1
+============================================
 
 DOS Extender (DOS32A.EXE):
 --------------------------
 + Repaired the `/DPMITST:ON` environment switch so it selects DPMI-before-VCPI
   detection as documented in the user manual.
 
-+ Removed the DOS4GW.EXE-name HDPMI32 shortcut and restored normal DPMI/VCPI
-  probing after XMS detection, so bound and external launch modes use the same
-  host-selection rules.
++ Removed the DOS4GW.EXE-name configuration shortcut. Bound and external launch
+  modes now use the same host-selection and DOS/4G API rules unless the user
+  changes documented SS or `DOS32A=` settings.
 
 + Limited external-DPMI exception handler installation to the historical DOS/32A
   set of exceptions 00h, 06h, 0Dh, and 0Eh instead of taking over every vector
   from 00h through 0Eh.
+
++ Changed the default kernel configuration to ignore unsupported DOS/4G API
+  extension calls, matching the SS default and avoiding hidden launch-name
+  policy.
 
 SUNSYS Bind Utility (SB.EXE):
 -----------------------------
@@ -32,7 +36,10 @@ SUNSYS Bind Utility (SB.EXE):
 
 Build and release metadata:
 ---------------------------
-+ Updated DOS/32A and SUNSYS utility version identifiers to 26.1.
++ Updated DOS/32A and SUNSYS utility version identifiers to 26.1.1.
+
++ Updated the Windows build wrapper so compiled files written to `binw\` use
+  uppercase DOS-style names.
 
 
 

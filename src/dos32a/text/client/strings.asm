@@ -126,8 +126,9 @@ copyright:
 	mov	[bx+1],al
 	pop	ax
 	aam
-	add	al,30h
-	mov	[bx+3],al
+	add	ax,3030h
+	mov	[bx+3],ah
+	mov	[bx+5],al
 	mov	cx,offs cpr_end - offs cpr_msg
 @@1:	lodsb
 	push	cx

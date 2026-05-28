@@ -416,7 +416,7 @@ void DiscardExit()
 
 void RestoreDefaults()
 {
-	id32.kernel_misc=		0x3F;
+	id32.kernel_misc=		0xBF;
 	id32.kernel_pagetables=		64;
 	id32.kernel_phystables=		2;
 	id32.kernel_callbacks=		16;
@@ -470,7 +470,12 @@ void ShowMemory()
 		Print_At(9,26,"N/A");
 	else
 	{
-		if(((id32.dos32a_version&0xFF00)>>8)>=10)
+		if(((id32.dos32a_version&0xFF00)>>8)>=9 &&
+		   (id32.dos32a_version&0x00FF)>=10)
+			Print_At(9,25,"%d.%d.%d",(id32.dos32a_version&0xFF00)>>8,
+				(id32.dos32a_version&0x00FF)/10,
+				(id32.dos32a_version&0x00FF)%10);
+		else if(((id32.dos32a_version&0xFF00)>>8)>=10)
 			Print_At(9,25,"%d.%d",(id32.dos32a_version&0xFF00)>>8,id32.dos32a_version&0x00FF);
 		else
 			Print_At(9,25,"%d.%02d",(id32.dos32a_version&0xFF00)>>8,id32.dos32a_version&0x00FF);

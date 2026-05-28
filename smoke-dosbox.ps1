@@ -49,8 +49,8 @@ function Exit-Smoke {
     Clear-SmokeStage
     exit $Code
 }
-$dos32a = Join-Path $repo 'binw\dos32a.exe'
-$sver = Join-Path $repo 'binw\sver.exe'
+$dos32a = Join-Path $repo 'binw\DOS32A.EXE'
+$sver = Join-Path $repo 'binw\SVER.EXE'
 $hello = Join-Path $repo 'dos32a_800\examples\asm_1\hello.exe'
 
 if (-not (Test-Path -LiteralPath $dos32a)) { throw "Missing build output: $dos32a." }
@@ -160,13 +160,13 @@ if (-not $logText.Contains('APP_SMOKE_OK')) {
     Show-SmokeLogTail -Path $log
     Exit-Smoke 1
 }
-if (-not $logText.Contains('Version:        26.1')) {
-    Write-Host 'SVER did not report DOS/32A version 26.1.'
+if (-not $logText.Contains('Version:        26.1.1')) {
+    Write-Host 'SVER did not report DOS/32A version 26.1.1.'
     Show-SmokeLogTail -Path $log
     Exit-Smoke 1
 }
 
-Select-String -Path $log -Pattern 'SVER -- Version|Version:        26\.1|SVER_SMOKE_OK|DIRECT_LOADER_SMOKE_OK|DOS32A_SMOKE_OK|Hello world from protected mode!!!|APP_SMOKE_OK' |
+Select-String -Path $log -Pattern 'SVER -- Version|Version:        26\.1\.1|SVER_SMOKE_OK|DIRECT_LOADER_SMOKE_OK|DOS32A_SMOKE_OK|Hello world from protected mode!!!|APP_SMOKE_OK' |
     ForEach-Object { $_.Line -replace '^\s*DOS CON:\s*', '' }
 
 Write-Host "DOSBox-X smoke passed using temporary staged files in $standStage and $appStage."

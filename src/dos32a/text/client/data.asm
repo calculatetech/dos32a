@@ -136,8 +136,6 @@ _seg_kernel	dw 0
 _mz_header	db 64 dup(0)
 _self_name	db 'DOS32A'
 _self_name_ext	db 'DOS32A.EXE'
-_dos4gw_name	db 'DOS4GW'
-_dos4gw_name_ext db 'DOS4GW.EXE'
 _standalone_syntax db 'DOS/32A fatal (8001): syntax is DOS32A <execname.xxx>',cr,0
 
 _sel_cs		dw 0		; protected mode selector storage
@@ -236,7 +234,7 @@ If EXEC_TYPE eq 2
 	db 'BETA '
 EndIf
 	db 'version '
-ver_msg	db 'xx.x',cr
+ver_msg	db 'xx.x.x',cr
 	db 'Copyright (C) 1996-2006 by Narech K.',cr
 cpr_end	label byte
 
