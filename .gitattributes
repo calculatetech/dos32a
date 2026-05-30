@@ -1,0 +1,33 @@
+# Preserve historical text line endings until a dedicated normalization commit.
+# A dry run of `git add --renormalize .` touches active source, reference trees,
+# and bundled historical tools, so this release records the policy without
+# mixing a broad mechanical rewrite into functional fixes.
+* -text
+
+# Assembly sources are historically CRLF; keep CR at EOL from appearing as
+# trailing whitespace in review checks.
+*.asm whitespace=cr-at-eol
+
+# Binary or archive artifacts.
+*.exe binary
+*.EXE binary
+*.com binary
+*.COM binary
+*.obj binary
+*.OBJ binary
+*.lib binary
+*.LIB binary
+*.zip binary
+*.ZIP binary
+*.7z binary
+*.7Z binary
+*.rar binary
+*.RAR binary
+*.png binary
+*.PNG binary
+*.jpg binary
+*.JPG binary
+*.jpeg binary
+*.JPEG binary
+*.gif binary
+*.GIF binary

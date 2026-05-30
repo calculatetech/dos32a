@@ -46,7 +46,7 @@ _ID32	segment para public use16 'CODE0'
 _ID32_SIZE=16		; size excluding 'ID32' signature
 ;-----------------------------------------------------------------------------
 db	'ID32'		; ID signature
-db	00111111b	; KERNEL misc. bits:
+db	10111111b	; KERNEL misc. bits:
 			;   bit 0: **deprecated**
 			;   bit 1: **deprecated**
 			;   bit 2: 0=VCPI smart page alloc off, 1=on	/1=def
@@ -54,7 +54,7 @@ db	00111111b	; KERNEL misc. bits:
 			;   bit 4: **deprecated**
 			;   bit 5: **deprecated**
 			;   bit 6: reserved				/0=def
-			;   bit 7: 0=ignore 4G extensions off, 1=on	/0=def
+			;   bit 7: 0=ignore 4G extensions off, 1=on	/1=def
 db	64		; Max. number of page tables under VCPI		/256MB
 db	2		; Max. number of page tables mem_mapping	/4MB
 db	16		; Max. number of real mode callbacks		/16

@@ -83,6 +83,8 @@ bind_exec_:
 	mov	ah,3Fh
 	int	21h
 	jc	@@err2
+	cmp	eax,ecx
+	jnz	@@err2
 
 	movzx	eax,word ptr [edx+0018h]	; get reloc tab offset
 	mov	esi,dword ptr _mem_ptr
@@ -138,6 +140,8 @@ bind_exec_:
 	mov	ah,3Fh
 	int	21h
 	jc	@@err3
+	cmp	eax,ecx
+	jnz	@@err3
 
 	pushad
 	mov	eax,_exec_start
@@ -186,10 +190,13 @@ bind_exec_:
 	mov	ah,40h
 	int	21h
 	jc	@@err5
+	cmp	eax,ecx
+	jnz	@@err5
 
 	mov	bx,_temp_handle			; close temp file
 	mov	ah,3Eh
 	int	21h
+	jc	@@err5
 	call	free_memory
 	popad
 	xor	eax,eax
@@ -235,6 +242,8 @@ unbind_exec_:
 	mov	ah,3Fh
 	int	21h
 	jc	@@err2
+	cmp	eax,ecx
+	jnz	@@err2
 
 	mov	edx,_tempname			; create temp file
 	mov	ecx,00h
@@ -262,10 +271,13 @@ unbind_exec_:
 	mov	ah,40h
 	int	21h
 	jc	@@err4
+	cmp	eax,ecx
+	jnz	@@err4
 
 	mov	bx,_temp_handle			; close temp file
 	mov	ah,3Eh
 	int	21h
+	jc	@@err4
 	call	free_memory
 	popad
 	xor	eax,eax

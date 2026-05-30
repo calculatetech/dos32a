@@ -2,6 +2,33 @@
 			*** DOS/32A DOS Extender -- ChangeLog ***
 			*****************************************
 
+[2026-05-28]
+DOS/32 Advanced DOS Extender, version 26.1.2
+============================================
+
+DOS Extender (DOS32A.EXE):
+--------------------------
++ Fixed STUB/32C's embedded default configuration so the DOS/4G API ignore
+  flag matches DOS/32A and SS restore-default behavior.
+
+SUNSYS Bind Utility (SB.EXE):
+-----------------------------
++ Fixed bind failure handling so SB no longer deletes the source payload before
+  reporting the error.
+
++ Fixed bind publishing so SB no longer deletes the source payload until the
+  bound destination has been written successfully.
+
++ Added short-write and read-error checks while creating and publishing SB
+  temporary output files.
+
+Build, Documentation, and Repository Workflow:
+----------------------------------------------
++ Updated DOS-visible build, smoke-test, and documentation paths to use
+  uppercase DOS-style filenames.
+
++ Added repository line-ending attributes and documented the clean-context
+  adversarial review requirement for future changes.
 
 [2026-05-27]
 DOS/32 Advanced DOS Extender, version 26.1.1
@@ -38,7 +65,7 @@ Build and release metadata:
 ---------------------------
 + Updated DOS/32A and SUNSYS utility version identifiers to 26.1.1.
 
-+ Updated the Windows build wrapper so compiled files written to `binw\` use
++ Updated the Windows build wrapper so compiled files written to `BINW\` use
   uppercase DOS-style names.
 
 
@@ -420,7 +447,7 @@ News
   format (see "sc.txt" help file located in .\DOCS directory).
 
 + Configurable stub file STUB/32C which can be configured by SUNSYS Setup
-  Utility program, located in .\BINW directory and named "stub32c.exe".
+  Utility program, located in .\BINW directory and named "STUB32C.EXE".
 
 DOS Extender
 ------------
@@ -606,7 +633,7 @@ DOS/32 Advanced DOS Extender version 4.30
 
 Install Program:
 ----------------
-+ The Install program will now automatically copy file "dos32a.lnk" into
++ The Install program will now automatically copy file "DOS32A.LNK" into
   WATCOM's BINW or BIN directory (depending on which version of WATCOM C/C++
   you have) if you select auto-system-update (which is strongly recommended).
 
@@ -614,7 +641,7 @@ Install Program:
   it was before. You can install it for example in "C:\WATCOM\DOS32A" or
   anything like that.
 
-+ File "dos4gw.exe" which was located in .\PCTEST directory has been removed
++ File "DOS4GW.EXE" which was located in .\PCTEST directory has been removed
   to reduce the size of Compressed Data File.
 
 DOS Extender:
@@ -763,7 +790,7 @@ DOS/32 Advanced DOS Extender version 3.00
 DOS Extender:
 -------------
 + When a file name is specified at the command line, the DOS Extender will now
-  apply an ".exe" extension to it, if it could not open the original file. This
+  apply an ".EXE" extension to it, if it could not open the original file. This
   will solve some compatibility problems when replacing DOS/4GW DOS Extenders
   with DOS/32 Advanced.
 

@@ -43,7 +43,7 @@
 #include <typedefs.h>
 
 
-	char*	version		= "26.1.1";
+	char*	version		= "26.1.2";
 	char*	errstr		= "SVER fatal:";
 
 	int		fileisbound	= TRUE;
@@ -63,7 +63,7 @@
 
 
 void err_usage() {
-	printf("%s syntax is SVER <execname.xxx | --help>\n",errstr);
+	printf("%s syntax is SVER <EXECNAME.XXX | --help>\n",errstr);
 	exit(1);
 }
 void err_open() {
@@ -127,19 +127,19 @@ void OpenFile()
 	if( (fp=fopen(buf,"rb")) == NULL)
 	{
 	  strcpy(buf,filename);
-	  strcat(buf,".exe");
+	  strcat(buf,".EXE");
 	  if( (fp=fopen(buf,"rb")) == NULL)
 	  {
 	    strcpy(buf,filename);
-	    strcat(buf,".le");
+	    strcat(buf,".LE");
 	    if( (fp=fopen(buf,"rb")) == NULL)
 	    {
 	      strcpy(buf,filename);
-	      strcat(buf,".lx");
+	      strcat(buf,".LX");
 	      if( (fp=fopen(buf,"rb")) == NULL)
 	      {
 	        strcpy(buf,filename);
-	        strcat(buf,".lc");
+	        strcat(buf,".LC");
 	        if( (fp=fopen(buf,"rb")) == NULL)
 	        {
 			  err_open();
@@ -301,6 +301,7 @@ void ShowExtenderVersion()
 	if(extender_release != 0)
 	printf("Release:        %d\n",		extender_release);
 
+	/* v9+ encodes patch releases as minor*10+patch in the low byte. */
 	if(extender_major_version >= 9 && extender_minor_version >= 10)
 	printf("Version:        %d.%d.%d\n",	extender_major_version, extender_minor_version/10, extender_minor_version%10);
 	else

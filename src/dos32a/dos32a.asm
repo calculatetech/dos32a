@@ -115,7 +115,7 @@ Endif
 			;   bit 6: 0=lock configuration off, 1=on	/*
 			;   bit 7: 0=Professional, 1=Beta		/*
 dw	0200h		; DOS INT 21h buffer in low memory (in para)	/8 KB
-dw	1A0Bh		; Internal Version of DOS/32A: db low,high
+dw	1A0Ch		; Internal Version of DOS/32A: db low,high (v9+ low=minor*10+patch)
 dw	0000h		; Reserved (v7.0+)
 ;-----------------------------------------------------------------------------
 include	TEXT\oemtitle.asm

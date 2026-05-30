@@ -1,7 +1,7 @@
 # DOS/32 Advanced DOS Extender
 
 This repository preserves and maintains the DOS/32 Advanced DOS Extender
-source. The active tree is the DOS/32A 26.1.1 maintenance branch under `src/`, with
+source. The active tree is the DOS/32A 26.1.2 maintenance branch under `src/`, with
 older 7.35 and 8.00 trees kept as historical references.
 
 DOS/32A is a 32-bit DOS extender and a drop-in replacement for DOS/4GW and
@@ -9,7 +9,7 @@ compatible extenders. The maintenance goal is to combine useful fixes and
 behavior from the 7.35, 8.00, and 9.1.2 releases: HDPMI32 compatibility for
 linear frame buffer write-combining, the 8.00 speed-loop changes, and the 9.x
 SSE support. Version 26.0 was the first stable release from this maintained
-line; version 26.1.1 carries low-risk compatibility and code-correctness fixes
+line; version 26.1.2 carries low-risk compatibility and code-correctness fixes
 on top of it.
 
 ## Repository Layout
@@ -26,11 +26,11 @@ on top of it.
   documentation, examples, and sources.
 
 Useful references include `ChangeLog`, archived readmes in the source trees,
-and the HTML documentation under `dos32a_800/docs/`.
+and the HTML documentation under `dos32a_800\docs\`.
 
 ## Windows Build Setup
 
-The active 26.1.1 sources are built with the historical DOS toolchain family.
+The active 26.1.2 sources are built with the historical DOS toolchain family.
 This checkout provides Windows batch wrappers so the tools do not need to be
 added to the machine-wide `PATH`.
 
@@ -49,7 +49,7 @@ From a Windows Command Prompt or PowerShell in the repository root, verify the
 expected tool paths:
 
 ```bat
-dir C:\WATCOM\BINNT\wcl.exe
+dir C:\WATCOM\BINNT\WCL.EXE
 dir tasm5\PATCHES\53_WIN\TASM32.EXE
 dir C:\DOSBox-X\dosbox-x.exe
 ```
@@ -67,13 +67,13 @@ persist back into a parent PowerShell session.
 
 ## Building
 
-Build all active 26.1.1 components:
+Build all active 26.1.2 components:
 
 ```bat
 build.cmd
 ```
 
-The build writes generated binaries to `binw\` using uppercase DOS-style file
+The build writes generated binaries to `BINW\` using uppercase DOS-style file
 names and removes source-directory intermediates. Individual components can be
 built with:
 
@@ -126,13 +126,15 @@ A successful run reports the generated DOS/32A version, for example:
 
 ```text
 DOS/32 Advanced DOS Extender:
-Version:        26.1.1
+Version:        26.1.2
 ```
 
 ## Validation
 
-There are no automated tests in this checkout, so validation must be explicit
-and reproducible.
+This checkout has one scripted DOSBox-X smoke test. It is useful for checking
+the build products and simple loader paths, but extender compatibility still
+requires explicit manual validation on the relevant DOS, DPMI, or real-hardware
+runtime.
 
 For utility changes, document the exact command path exercised and the files
 used as input and output. For extender or stub changes, record the affected

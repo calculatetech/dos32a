@@ -2,7 +2,7 @@
 setlocal
 
 call "%~dp0build-env.cmd" || exit /b 1
-set "OUT=%DOS32A%\binw"
+set "OUT=%DOS32A%\BINW"
 
 if /i "%~1"=="clean" goto clean
 if /i "%~1"=="dos32a" goto one_dos32a
@@ -60,11 +60,11 @@ echo Creating DOS/32 Advanced DOS Extender
 pushd "%DOS32A%\src\dos32a" || exit /b 1
 tasm32 -dEXEC_TYPE=0 %TASMFLAGS% -c kernel.asm || goto fail_popd
 tasm32 -dEXEC_TYPE=0 %TASMFLAGS% -c dos32a.asm || goto fail_popd
-wcl %WCLFLAGS% -lr -fm=dos32a -fe=dos32a -"disable 2083" -"option packcode=1,packdata=1" dos32a.obj kernel.obj || goto fail_popd
+wcl %WCLFLAGS% -lr -fm=DOS32A -fe=DOS32A -"disable 2083" -"option packcode=1,packdata=1" dos32a.obj kernel.obj || goto fail_popd
 if not exist "%OUT%" mkdir "%OUT%" || goto fail_popd
-del /q "%OUT%\dos32a.exe" "%OUT%\DOS32A.EXE" >nul 2>nul
-copy /y dos32a.exe "%OUT%\DOS32A.EXE" >nul || goto fail_popd
-call :clean_current
+del /q "%OUT%\DOS32A.EXE" >nul 2>nul
+copy /y DOS32A.EXE "%OUT%\DOS32A.EXE" >nul || goto fail_popd
+del /q *.OBJ *.O *.LST *.ERR *.CRF *.XRF *.SYM *.MAP *.EXE >nul 2>nul
 popd
 exit /b 0
 
@@ -74,13 +74,13 @@ echo Creating STUB/32A and STUB/32C
 pushd "%DOS32A%\src\stub32a" || exit /b 1
 tasm32 -dEXEC_TYPE=0 %TASMFLAGS% stub32a.asm || goto fail_popd
 tasm32 -dEXEC_TYPE=0 %TASMFLAGS% stub32c.asm || goto fail_popd
-wcl %WCLFLAGS% -lr -fe=stub32a stub32a.obj || goto fail_popd
-wcl %WCLFLAGS% -lr -fe=stub32c stub32c.obj || goto fail_popd
+wcl %WCLFLAGS% -lr -fe=STUB32A stub32a.obj || goto fail_popd
+wcl %WCLFLAGS% -lr -fe=STUB32C stub32c.obj || goto fail_popd
 if not exist "%OUT%" mkdir "%OUT%" || goto fail_popd
-del /q "%OUT%\stub32a.exe" "%OUT%\STUB32A.EXE" "%OUT%\stub32c.exe" "%OUT%\STUB32C.EXE" >nul 2>nul
-copy /y stub32a.exe "%OUT%\STUB32A.EXE" >nul || goto fail_popd
-copy /y stub32c.exe "%OUT%\STUB32C.EXE" >nul || goto fail_popd
-call :clean_current
+del /q "%OUT%\STUB32A.EXE" "%OUT%\STUB32C.EXE" >nul 2>nul
+copy /y STUB32A.EXE "%OUT%\STUB32A.EXE" >nul || goto fail_popd
+copy /y STUB32C.EXE "%OUT%\STUB32C.EXE" >nul || goto fail_popd
+del /q *.OBJ *.O *.LST *.ERR *.CRF *.XRF *.SYM *.MAP *.EXE >nul 2>nul
 popd
 exit /b 0
 
@@ -89,11 +89,11 @@ echo.
 echo Creating SUNSYS Bind Utility
 pushd "%DOS32A%\src\sb" || exit /b 1
 tasm32 %TASMFLAGS% sbind.asm || goto fail_popd
-wcl386 %WCLFLAGS% -l=dos32a -fe=sb -k65536 sbind.obj main.c || goto fail_popd
+wcl386 %WCLFLAGS% -l=dos32a -fe=SB -k65536 sbind.obj main.c || goto fail_popd
 if not exist "%OUT%" mkdir "%OUT%" || goto fail_popd
-del /q "%OUT%\sb.exe" "%OUT%\SB.EXE" >nul 2>nul
-copy /y sb.exe "%OUT%\SB.EXE" >nul || goto fail_popd
-call :clean_current
+del /q "%OUT%\SB.EXE" >nul 2>nul
+copy /y SB.EXE "%OUT%\SB.EXE" >nul || goto fail_popd
+del /q *.OBJ *.O *.LST *.ERR *.CRF *.XRF *.SYM *.MAP *.EXE >nul 2>nul
 popd
 exit /b 0
 
@@ -103,11 +103,11 @@ echo Creating SUNSYS Compress Utility
 pushd "%DOS32A%\src\sc" || exit /b 1
 tasm32 %TASMFLAGS% scomp.asm || goto fail_popd
 tasm32 %TASMFLAGS% sload.asm || goto fail_popd
-wcl386 %WCLFLAGS% -l=dos32a -fe=sc -k65536 scomp.obj sload.obj encode.c main.c || goto fail_popd
+wcl386 %WCLFLAGS% -l=dos32a -fe=SC -k65536 scomp.obj sload.obj encode.c main.c || goto fail_popd
 if not exist "%OUT%" mkdir "%OUT%" || goto fail_popd
-del /q "%OUT%\sc.exe" "%OUT%\SC.EXE" >nul 2>nul
-copy /y sc.exe "%OUT%\SC.EXE" >nul || goto fail_popd
-call :clean_current
+del /q "%OUT%\SC.EXE" >nul 2>nul
+copy /y SC.EXE "%OUT%\SC.EXE" >nul || goto fail_popd
+del /q *.OBJ *.O *.LST *.ERR *.CRF *.XRF *.SYM *.MAP *.EXE >nul 2>nul
 popd
 exit /b 0
 
@@ -116,11 +116,11 @@ echo.
 echo Creating SUNSYS Setup Utility
 pushd "%DOS32A%\src\ss" || exit /b 1
 tasm32 %TASMFLAGS% setup.asm || goto fail_popd
-wcl386 %WCLFLAGS% -l=dos32a -fe=ss -k65536 -"option nocaseexact" setup.obj main.c || goto fail_popd
+wcl386 %WCLFLAGS% -l=dos32a -fe=SS -k65536 -"option nocaseexact" setup.obj main.c || goto fail_popd
 if not exist "%OUT%" mkdir "%OUT%" || goto fail_popd
-del /q "%OUT%\ss.exe" "%OUT%\SS.EXE" >nul 2>nul
-copy /y ss.exe "%OUT%\SS.EXE" >nul || goto fail_popd
-call :clean_current
+del /q "%OUT%\SS.EXE" >nul 2>nul
+copy /y SS.EXE "%OUT%\SS.EXE" >nul || goto fail_popd
+del /q *.OBJ *.O *.LST *.ERR *.CRF *.XRF *.SYM *.MAP *.EXE >nul 2>nul
 popd
 exit /b 0
 
@@ -128,30 +128,26 @@ exit /b 0
 echo.
 echo Creating DOS/32 SVER
 pushd "%DOS32A%\src\sver" || exit /b 1
-wcl %WCLFLAGS% -lr -fe=sver main.c || goto fail_popd
+wcl %WCLFLAGS% -lr -fe=SVER main.c || goto fail_popd
 if not exist "%OUT%" mkdir "%OUT%" || goto fail_popd
-del /q "%OUT%\sver.exe" "%OUT%\SVER.EXE" >nul 2>nul
-copy /y sver.exe "%OUT%\SVER.EXE" >nul || goto fail_popd
-call :clean_current
+del /q "%OUT%\SVER.EXE" >nul 2>nul
+copy /y SVER.EXE "%OUT%\SVER.EXE" >nul || goto fail_popd
+del /q *.OBJ *.O *.LST *.ERR *.CRF *.XRF *.SYM *.MAP *.EXE >nul 2>nul
 popd
 exit /b 0
 
 :clean
 if exist "%OUT%" (
-    del /q "%OUT%\dos32a.exe" "%OUT%\DOS32A.EXE" "%OUT%\stub32a.exe" "%OUT%\STUB32A.EXE" "%OUT%\stub32c.exe" "%OUT%\STUB32C.EXE" "%OUT%\sb.exe" "%OUT%\SB.EXE" "%OUT%\sc.exe" "%OUT%\SC.EXE" "%OUT%\ss.exe" "%OUT%\SS.EXE" "%OUT%\sver.exe" "%OUT%\SVER.EXE" >nul 2>nul
+    del /q "%OUT%\DOS32A.EXE" "%OUT%\STUB32A.EXE" "%OUT%\STUB32C.EXE" "%OUT%\SB.EXE" "%OUT%\SC.EXE" "%OUT%\SS.EXE" "%OUT%\SVER.EXE" >nul 2>nul
 )
 for %%D in (dos32a stub32a sb sc ss sver) do (
     if exist "%DOS32A%\src\%%D" (
         pushd "%DOS32A%\src\%%D" >nul
-        call :clean_current
+        del /q *.OBJ *.O *.LST *.ERR *.CRF *.XRF *.SYM *.MAP *.EXE >nul 2>nul
         popd >nul
     )
 )
 echo Clean complete.
-exit /b 0
-
-:clean_current
-del /q *.obj *.o *.lst *.err *.crf *.xrf *.sym *.map *.exe >nul 2>nul
 exit /b 0
 
 :fail_popd

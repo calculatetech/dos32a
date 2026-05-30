@@ -11,7 +11,7 @@ This repository contains the DOS/32 Advanced source tree. Top-level reference fi
 
 ## Build, Test, and Development Commands
 
-This checkout does not include a Makefile, CMake project, build script, or automated test suite. The `README` states that building requires the historical v7.1 SDK. Do not add or document modern build commands unless the corresponding project files are introduced.
+This checkout includes Windows batch wrappers for the historical Open Watcom and TASM toolchain. Use the checked-in scripts rather than introducing a modern build system.
 
 Useful inspection commands:
 
@@ -20,13 +20,27 @@ find src -maxdepth 2 -type f | sort
 git status --short
 ```
 
+Useful Windows build and smoke commands:
+
+```bat
+build.cmd
+build.cmd clean
+smoke-dosbox.cmd -TimeoutSeconds 10
+```
+
 ## Coding Style and Naming
 
 Preserve the existing source style. C files keep their large license headers, tab indentation, and compact K&R-era formatting. Assembly files use uppercase directives and labels, semicolon comments, and existing filename/module naming. Keep edits local to the relevant utility or extender component, and avoid broad formatting churn.
 
+DOS-visible filenames and paths in scripts, documentation, generated artifacts, patch bundles, and validation output must be uppercase, for example `C:\DOS32A\BINW\DOS32A.EXE`. Do not rename historical host-side source directories only for casing; preserve existing repository paths unless a functional DOS-facing path is being changed.
+
+Follow `.gitattributes` for line endings. Keep broad line-ending normalization in a dedicated mechanical commit, separate from logic changes, so diffs remain reviewable.
+
 ## Testing Guidance
 
-Because no automated tests are present, validation should be explicit and reproducible. For source changes, document the exact SDK/toolchain, host environment, and DOS/DPMI runtime used for any build or manual exercise. For utilities, verify the specific command path touched. For extender or stub changes, record the affected binary path and any observed runtime behavior.
+Because automated coverage is limited to the DOSBox-X smoke wrapper, validation should be explicit and reproducible. For source changes, document the exact SDK/toolchain, host environment, and DOS/DPMI runtime used for any build or manual exercise. For utilities, verify the specific command path touched. For extender or stub changes, record the affected binary path and any observed runtime behavior.
+
+Every change set must receive a clean-context adversarial review against the active codebase before commit or release. Run the reviewer without relying on the current conversational context, instruct it to make no edits, and ask it to focus on dormant code, obvious bugs, inconsistencies, deviations from original style, DOS-visible path/name casing, stale docs, line-ending churn, and regression risk. Verify each finding locally before acting on it or reporting it as accepted risk.
 
 ## Commit and PR Guidance
 

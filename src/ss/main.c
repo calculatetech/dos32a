@@ -116,12 +116,12 @@ void ArgInit(int argc, char *argv[])
 
 l1:	if(argc<2)
 	{
-l2:	  printf("%s syntax is SS <execname.xxx> [config.d32 | command] [option]\n\n", errstr);
+l2:	  printf("%s syntax is SS <EXECNAME.XXX> [CONFIG.D32 | command] [option]\n\n", errstr);
 	  printf("Commands:\n");
 	  printf("---------\n");
 	  printf("/I or /INFO        Write DOS/32A Configuration to console\n");
-	  printf("/L or /LOCK        Lock Configuration in <execname.xxx> file\n");
-	  printf("/U or /UNLOCK      Unlock Configuration in <execname.xxx> file\n\n");
+	  printf("/L or /LOCK        Lock Configuration in <EXECNAME.XXX> file\n");
+	  printf("/U or /UNLOCK      Unlock Configuration in <EXECNAME.XXX> file\n\n");
 	  printf("Options:\n");
 	  printf("--------\n");
 	  printf("/Q or /QUIET       Quiet mode (partially disables console output)\n");
@@ -137,7 +137,7 @@ l2:	  printf("%s syntax is SS <execname.xxx> [config.d32 | command] [option]\n\n
 	n=ReadHeader(buf,&id32);
 	if(n==1)
 	{
-		strcat(buf,".exe");
+		strcat(buf,".EXE");
 		n=ReadHeader(buf, &id32);
 	}
 	if(n==1) { printf("%s cannot open file \"%s\"\n", errstr, argv[1]); exit(1); }
@@ -192,7 +192,7 @@ l2:	  printf("%s syntax is SS <execname.xxx> [config.d32 | command] [option]\n\n
 		if(n==-1)
 		{
 			strcpy(buf2,argv[2]);
-			strcat(buf2,".d32");
+			strcat(buf2,".D32");
 			n=open(buf2,O_RDONLY | O_BINARY);
 			if(n==-1)
 			{
@@ -470,6 +470,7 @@ void ShowMemory()
 		Print_At(9,26,"N/A");
 	else
 	{
+		/* v9+ encodes patch releases as minor*10+patch in the low byte. */
 		if(((id32.dos32a_version&0xFF00)>>8)>=9 &&
 		   (id32.dos32a_version&0x00FF)>=10)
 			Print_At(9,25,"%d.%d.%d",(id32.dos32a_version&0xFF00)>>8,
@@ -555,7 +556,7 @@ void RestoreConfig()
 		ptr=(char *)strchr(buf,'.');
 		if(ptr!=NULL) strset(ptr,0);
 		strcpy(cfgfilename,buf);
-		strcat(buf,".d32");
+		strcat(buf,".D32");
 		n=open(buf,O_RDONLY | O_BINARY);
 		if(n==-1)
 		{

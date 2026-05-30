@@ -39,12 +39,13 @@
 
 #include "main.h"
 
-	char*	version = "26.1.1";
+	char*	version = "26.1.2";
 	char*	errstr="SC/32A fatal:";
 
 	char*	bindname="SB.EXE";
 	char*	tempname1="$$SC32$$.111";
 	char*	tempname2="$$SC32$$.222";
+	char*	backname="$$SC32$$.BAK";
 	char*	titlename="OEMTITLE.INF";
 	char*	execstyle[]= { "LE", "LX", "LC", "PE", "PMW1" };
 	char*	stubnames[]= { "DOS32A.EXE", "STUB32A.EXE", "STUB32C.EXE" };
@@ -284,7 +285,7 @@ l0:		argn=18;
 
 	if(argc<2 || execargn>=argc)
 	{
-l1:	  Print("SC/32A fatal: syntax is SC [commands] [options] <execname.xxx>\n\n");
+l1:	  Print("SC/32A fatal: syntax is SC [commands] [options] <EXECNAME.XXX>\n\n");
 	  Print("Commands:\n");
 	  Print("---------\n");
 	  Print("/B                 Bind DOS/32A to produced LC Executable\n");
@@ -401,8 +402,8 @@ void main(int argc, char *argv[])
 	}
 	else
 	{
-		unlink(newfilename);
-		copy_file(tempname2,newfilename);
+		if(publish_file(tempname2,newfilename)!=0)
+			err_write(newfilename);
 		unlink(tempname2);
 
 	}
@@ -755,30 +756,30 @@ void CheckExec(char *argv[])
 	if(bufptr!=NULL)
 		strset(bufptr,0);
 	if(bind==TRUE)
-		strcat(newfilename,".exe");
+		strcat(newfilename,".EXE");
 	else
-		strcat(newfilename,".lc");
+		strcat(newfilename,".LC");
 
 	if(CheckIfExists(oldfilename)==TRUE)
 		return;
 	bufptr=(char *)strchr(oldfilename,'.');
 	if(bufptr!=NULL)
 		return;
-	strcat(oldfilename,".exe");
-
-	if(CheckIfExists(oldfilename)==TRUE)
-		return;
-	bufptr=(char *)strchr(oldfilename,'.');
-	if(bufptr!=NULL)
-		strset(bufptr,0);
-	strcat(oldfilename,".le");
+	strcat(oldfilename,".EXE");
 
 	if(CheckIfExists(oldfilename)==TRUE)
 		return;
 	bufptr=(char *)strchr(oldfilename,'.');
 	if(bufptr!=NULL)
 		strset(bufptr,0);
-	strcat(oldfilename,".lx");
+	strcat(oldfilename,".LE");
+
+	if(CheckIfExists(oldfilename)==TRUE)
+		return;
+	bufptr=(char *)strchr(oldfilename,'.');
+	if(bufptr!=NULL)
+		strset(bufptr,0);
+	strcat(oldfilename,".LX");
 
 	if(CheckIfExists(oldfilename)==TRUE)
 		return;
@@ -795,13 +796,74 @@ int CheckIfExists(char *name)
 	}
 	return(FALSE);
 }
+void CanonicalName(char *dest, char *src)
+{
+	char *ptr;
+
+	if(_fullpath(dest,src,_MAX_PATH)==NULL)
+		strcpy(dest,src);
+	for(ptr=dest; *ptr!=0; ptr++)
+	{
+		if(*ptr=='/') *ptr='\\';
+		*ptr=toupper(*ptr);
+	}
+	while(ptr>dest+3 && *(ptr-1)=='\\')
+		*--ptr=0;
+}
+
+int SameFileName(char *name1, char *name2)
+{
+	char path1[_MAX_PATH];
+	char path2[_MAX_PATH];
+
+	CanonicalName(path1,name1);
+	CanonicalName(path2,name2);
+	return(stricmp(path1,path2)==0);
+}
+void MakeBackupName(char *dest, char *backup)
+{
+	char *ptr;
+	char *dirptr;
+
+	strcpy(backup,dest);
+	dirptr=backup-1;
+	for(ptr=backup; *ptr!=0; ptr++)
+	{
+		if(*ptr=='/') *ptr='\\';
+		if(*ptr=='\\' || *ptr==':') dirptr=ptr;
+	}
+	strcpy(dirptr+1,backname);
+}
+
+int publish_file(char *f1, char *f2)
+{
+	char backup[_MAX_PATH];
+	int backed=FALSE;
+
+	MakeBackupName(f2,backup);
+	if(SameFileName(f2,backup)) return(-1);
+	if(CheckIfExists(backup)) return(-1);
+	if(CheckIfExists(f2))
+	{
+		if(rename(f2,backup)!=0) return(-1);
+		backed=TRUE;
+	}
+	if(copy_file(f1,f2)!=0)
+	{
+		unlink(f2);
+		if(backed) rename(backup,f2);
+		return(-1);
+	}
+	if(backed) unlink(backup);
+	return(0);
+}
 void CheckEnvironment()
 {
 	if(getenv("DOS32A")==NULL)
 		err_environment();
 }
 
-void copy_file(char *f1, char *f2)
+int copy_file(char *f1, char *f2)
 {
 	int c;
 	FILE *src;
@@ -809,21 +871,37 @@ void copy_file(char *f1, char *f2)
 
 	if( (f1[1] != ':') && (f2[1] != ':') )
 	{
-		rename(f1,f2);
-		return;
+		if(rename(f1,f2)==0) return(0);
 	}
 	if((src=fopen(f1,"rb"))!=NULL)
 	{
 		if((dest=fopen(f2,"wb"))!=NULL)
 		{
 			while((c=fgetc(src))!=EOF)
-				fputc(c,dest);
-			fclose(dest);
+				if(fputc(c,dest)==EOF)
+				{
+					fclose(dest);
+					fclose(src);
+					return(-1);
+				}
+			if(ferror(src))
+			{
+				fclose(dest);
+				fclose(src);
+				return(-1);
+			}
+			if(fclose(dest)==EOF)
+			{
+				fclose(src);
+				return(-1);
+			}
+			fclose(src);
+			return(0);
 		}
 		fclose(src);
 	}
+	return(-1);
 }
-
 void AppendTitleFile()
 {
 	int n,m,k;

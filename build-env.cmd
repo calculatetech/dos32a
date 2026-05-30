@@ -8,7 +8,7 @@ if not defined WATCOM set "WATCOM=C:\WATCOM"
 if not defined DOSBOX_X set "DOSBOX_X=C:\DOSBox-X\dosbox-x.exe"
 set "TASM32=%DOS32A%\tasm5\PATCHES\53_WIN\TASM32.EXE"
 
-if not exist "%WATCOM%\BINNT\wcl.exe" (
+if not exist "%WATCOM%\BINNT\WCL.EXE" (
     echo Open Watcom was not found at "%WATCOM%".
     echo Set WATCOM before calling this script, or install it at C:\WATCOM.
     exit /b 1
@@ -20,7 +20,7 @@ if not exist "%TASM32%" (
     exit /b 1
 )
 
-set "PATH=%DOS32A%\tasm5\PATCHES\53_WIN;%DOS32A%\binw;%WATCOM%\BINNT;%WATCOM%\BINW;%PATH%"
+set "PATH=%DOS32A%\tasm5\PATCHES\53_WIN;%DOS32A%\BINW;%WATCOM%\BINNT;%WATCOM%\BINW;%PATH%"
 set "EDPATH=%WATCOM%\EDDAT"
 set "INCLUDE=%WATCOM%\H;%WATCOM%\H\NT;.;%DOS32A%\dos32a_800\h32;%DOS32A%\dos32a_800\src\sutils\misc"
 set "TASMFLAGS=-r -ml -m -q -zn -w2 -m5 -i%DOS32A%\dos32a_800\src\sutils\misc"

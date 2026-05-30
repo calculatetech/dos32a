@@ -39,7 +39,7 @@
 
 #include "main.h"
 
-	char*	version = "26.1.1";
+	char*	version = "26.1.2";
 	char	newname[80];
 	char	newname2[80];
 	char	filename[80];
@@ -55,6 +55,7 @@
 	char*	stubname3	= "STUB32C.EXE";
 	char*	errstr		= "SB/32A fatal:";
 	char*	tempname	= "$$SB32$$.TMP";
+	char*	backname	= "$$SB32$$.BAK";
 
 	int	execargn = 1;
 	int	filesize = 0;
@@ -113,6 +114,10 @@ void err_wrtmp(void) {
 	printf("%s error writing to temp file\n",errstr);
 	exit(1);
 }
+void err_write(char *str) {
+	printf("%s error writing to file \"%s\"\n",errstr,str);
+	exit(1);
+}
 void err_rdstub(void) {
 	printf("%s error reading from stub file\n",errstr);
 	exit(1);
@@ -137,6 +142,10 @@ void err_sameact(void) {
 	printf("%s cannot Bind and Unbind at the same time\n",errstr);
 	exit(1);
 }
+void err_samefile(char *str) {
+	printf("%s source and destination file \"%s\" are the same\n",errstr,str);
+	exit(1);
+}
 void err_nullname(void) {
 	printf("%s you must specify a file name with /BN or /UN options\n",errstr);
 	exit(1);
@@ -150,6 +159,60 @@ void err_formpmw1(char *str) {
 	printf("%s cannot bind PMW1-compressed PMODE/W application \"%s\"\n",errstr,str);
 	printf("DOS/32A does not load PMW1 executable payloads\n");
 	exit(1);
+}
+
+
+void CanonicalName(char *dest, char *src)
+{
+	char *ptr;
+
+	if(_fullpath(dest,src,_MAX_PATH)==NULL)
+		strcpy(dest,src);
+	for(ptr=dest; *ptr!=0; ptr++)
+	{
+		if(*ptr=='/') *ptr='\\';
+		*ptr=toupper(*ptr);
+	}
+	while(ptr>dest+3 && *(ptr-1)=='\\')
+		*--ptr=0;
+}
+
+int SameFileName(char *name1, char *name2)
+{
+	char path1[_MAX_PATH];
+	char path2[_MAX_PATH];
+
+	CanonicalName(path1,name1);
+	CanonicalName(path2,name2);
+	return(stricmp(path1,path2)==0);
+}
+
+void MakeBackupName(char *dest, char *backup)
+{
+	char *ptr;
+	char *dirptr;
+
+	strcpy(backup,dest);
+	dirptr=backup-1;
+	for(ptr=backup; *ptr!=0; ptr++)
+	{
+		if(*ptr=='/') *ptr='\\';
+		if(*ptr=='\\' || *ptr==':') dirptr=ptr;
+	}
+	strcpy(dirptr+1,backname);
+}
+
+int FileExists(char *name)
+{
+	int n;
+
+	n=open(name,O_RDWR | O_BINARY);
+	if(n!=-1)
+	{
+		close(n);
+		return(TRUE);
+	}
+	return(FALSE);
 }
 
 
@@ -270,7 +333,7 @@ l0:			argn=14;
 
 	if(argc<2 || execargn>=argc)
 	{
-l1:	  Print("SB/32A fatal: syntax is SB [commands] [options] <execname.xxx>\n\n");
+l1:	  Print("SB/32A fatal: syntax is SB [commands] [options] <EXECNAME.XXX>\n\n");
 	  Print("Commands:\n");
 	  Print("---------\n");
 	  Print("/B                 Bind DOS/32A to Linear Executable\n");
@@ -282,8 +345,8 @@ l1:	  Print("SB/32A fatal: syntax is SB [commands] [options] <execname.xxx>\n\n"
 	  Print("/U                 Unbind Linear Executable from the existing Stub\n\n");
 	  Print("Options:\n");
 	  Print("--------\n");
-	  Print("/BNfilename.xxx    Specify destination file name when Binding\n");
-	  Print("/UNfilename.xxx    Specify destination file name when Unbinding\n");
+	  Print("/BNFILENAME.XXX    Specify destination file name when Binding\n");
+	  Print("/UNFILENAME.XXX    Specify destination file name when Unbinding\n");
 	  Print("/O                 Unconditionally Overwrite existing files\n");
 	  Print("/Q                 Quiet mode (partially disables console output)\n");
 	  Print("/S                 Silent mode (totally disables console output)\n");
@@ -305,28 +368,28 @@ void OpenExec(char *argv[])
 	if(n!=0)
 	{
 		strcpy(filename,argv[execargn]);
-		strcat(filename,".exe");
+		strcat(filename,".EXE");
 		n=open_exec(filename);
 		if(n==-2)
 			err_rdonly(argv[execargn]);
 		if(n!=0)
 		{
 			strcpy(filename,argv[execargn]);
-			strcat(filename,".le");
+			strcat(filename,".LE");
 			n=open_exec(filename);
 			if(n==-2)
 				err_rdonly(argv[execargn]);
 			if(n!=0)
 			{
 				strcpy(filename,argv[execargn]);
-				strcat(filename,".lx");
+				strcat(filename,".LX");
 				n=open_exec(filename);
 				if(n==-2)
 					err_rdonly(argv[execargn]);
 				if(n!=0)
 				{
 					strcpy(filename,argv[execargn]);
-					strcat(filename,".lc");
+					strcat(filename,".LC");
 					n=open_exec(filename);
 					if(n==-2)
 						err_rdonly(argv[execargn]);
@@ -467,11 +530,11 @@ void main(int argc, char *argv[])
 		strcpy(newname,filename);
 		bufptr=(char *)strchr(newname,'.');
 		if(bufptr!=NULL) strset(bufptr,0);
-		if(Main_Type==1 || Exec_Type==1) strcat(newname,".le");
-		if(Main_Type==2 || Exec_Type==2) strcat(newname,".lx");
-		if(Main_Type==3 || Exec_Type==3) strcat(newname,".lc");
-		if(Main_Type==4 || Exec_Type==4) strcat(newname,".pe");
-		if(Main_Type==5 || Exec_Type==5) strcat(newname,".pmw");
+		if(Main_Type==1 || Exec_Type==1) strcat(newname,".LE");
+		if(Main_Type==2 || Exec_Type==2) strcat(newname,".LX");
+		if(Main_Type==3 || Exec_Type==3) strcat(newname,".LC");
+		if(Main_Type==4 || Exec_Type==4) strcat(newname,".PE");
+		if(Main_Type==5 || Exec_Type==5) strcat(newname,".PMW");
 	}
 	else
 		strcpy(newname,name_un);
@@ -482,7 +545,7 @@ void main(int argc, char *argv[])
 		bufptr2=(char *)strchr(newname2,'.');
 		if(bufptr2!=NULL)
 			strset(bufptr2,0);
-		strcat(newname2,".exe");
+		strcat(newname2,".EXE");
 	}
 	else
 		strcpy(newname2,name_bn);
@@ -523,6 +586,7 @@ void UnbindExec(char *argv[])
 	Print("\n");
 	Print("  Unbinding file:   \"%s\"\n",filename);
 	Print("Destination file:   \"%s\"\n",newname);
+	if(SameFileName(filename,newname)) err_samefile(newname);
 	CheckIfExists(newname);
 
 	n=unbind_exec();
@@ -531,8 +595,8 @@ void UnbindExec(char *argv[])
 	if(n==-3) err_crtmp();
 	if(n==-4) err_wrtmp();
 
-	unlink(newname);
-	copy_file(tempname,newname);
+	if(publish_file(tempname,newname)!=0)
+		err_write(newname);
 	unlink(tempname);
 
 	oldfilesize=GetFileSize(newname);
@@ -552,6 +616,7 @@ void BindExec(char *argv[])
 	char *envname;
 	char envbuf[256];
 
+	if(SameFileName(newname,newname2)) err_samefile(newname2);
 	CheckIfExists(newname2);
 	if(Main_Type==0)
 		UnbindExec(argv);
@@ -588,20 +653,24 @@ void BindExec(char *argv[])
 	n=bind_exec(stubhandle, exechandle, stubsize, execsize);
 	close(exechandle);
 	close(stubhandle);
-	unlink(newname);
 	close_exec();
-	switch(n)
+	if(n<0)
 	{
-		case -1:	err_mem(newname);
-		case -2:	err_rdstub();
-		case -3:	err_read(newname);
-		case -4:	err_crtmp();
-		case -5:	err_wrtmp();
-		case -6:	err_invstub();
+		unlink(tempname);
+		switch(n)
+		{
+			case -1:	err_mem(newname);
+			case -2:	err_rdstub();
+			case -3:	err_read(newname);
+			case -4:	err_crtmp();
+			case -5:	err_wrtmp();
+			case -6:	err_invstub();
+		}
 	}
 
-	unlink(newname2);
-	copy_file(tempname,newname2);
+	if(publish_file(tempname,newname2)!=0)
+		err_write(newname2);
+	unlink(newname);
 	unlink(tempname);
 
 	newfilesize=GetFileSize(newname2);
@@ -649,12 +718,34 @@ int GetFileSize(char *name)
 	}
 	return(m);
 }
+int publish_file(char *f1, char *f2)
+{
+	char backup[_MAX_PATH];
+	int backed=FALSE;
+
+	MakeBackupName(f2,backup);
+	if(SameFileName(f2,backup)) return(-1);
+	if(FileExists(backup)) return(-1);
+	if(FileExists(f2))
+	{
+		if(rename(f2,backup)!=0) return(-1);
+		backed=TRUE;
+	}
+	if(copy_file(f1,f2)!=0)
+	{
+		unlink(f2);
+		if(backed) rename(backup,f2);
+		return(-1);
+	}
+	if(backed) unlink(backup);
+	return(0);
+}
 void CheckEnvironment()
 {
 	if(getenv("DOS32A")==NULL)
 		err_environment();
 }
-void copy_file(char *f1, char *f2)
+int copy_file(char *f1, char *f2)
 {
 	int c;
 	FILE *src;
@@ -662,19 +753,37 @@ void copy_file(char *f1, char *f2)
 
 	if( (f1[1] != ':') && (f2[1] != ':') )
 	{
-		rename(f1,f2);
-		return;
+		if(rename(f1,f2)==0) return(0);
 	}
 
 	if((src=fopen(f1,"rb"))!=NULL)
 	{
 		if((dest=fopen(f2,"wb"))!=NULL)
 		{
-			while((c=fgetc(src))!=EOF) fputc(c,dest);
-			fclose(dest);
+			while((c=fgetc(src))!=EOF)
+				if(fputc(c,dest)==EOF)
+				{
+					fclose(dest);
+					fclose(src);
+					return(-1);
+				}
+			if(ferror(src))
+			{
+				fclose(dest);
+				fclose(src);
+				return(-1);
+			}
+			if(fclose(dest)==EOF)
+			{
+				fclose(src);
+				return(-1);
+			}
+			fclose(src);
+			return(0);
 		}
 		fclose(src);
 	}
+	return(-1);
 }
 
 void DisplayOEMInfo()

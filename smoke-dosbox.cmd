@@ -9,8 +9,8 @@ if not exist "%DOSBOX_X%" (
     exit /b 1
 )
 
-if not exist "%DOS32A%\binw\sver.exe" call "%~dp0build.cmd" sver || exit /b 1
-if not exist "%DOS32A%\binw\dos32a.exe" call "%~dp0build.cmd" dos32a || exit /b 1
+if not exist "%DOS32A%\BINW\SVER.EXE" call "%~dp0build.cmd" sver || exit /b 1
+if not exist "%DOS32A%\BINW\DOS32A.EXE" call "%~dp0build.cmd" dos32a || exit /b 1
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0smoke-dosbox.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0smoke-dosbox.ps1" %*
 exit /b %ERRORLEVEL%
